@@ -33,4 +33,12 @@ module.exports = {
 
   // ── Timezone -────────────────────
   TIMEZONE: process.env.TIMEZONE || "Africa/Nairobi",
+
+  // ── CORS ─────────────────────────
+  // Add more, comma separated
+  ALLOWED_ORIGINS: (
+    process.env.ALLOWED_ORIGINS || "https://monitor.giftedtech.co.ke"
+  )
+    .split(",")
+    .map((o) => o.trim()),
 };
