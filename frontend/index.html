@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+
+    <!-- Viewport: compatible with all browsers, allows zoom for accessibility -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+
+    <!-- SEO -->
+    <meta
+      name="description"
+      content="Gifted Monitor — 24/7 uptime monitoring for your websites. Email OTP signup, alerts via WhatsApp, Telegram, and email."
+    />
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#16a34a" />
+
+    <!-- Apply theme before paint (matches persisted zustand + system) -->
+    <script>
+      (function () {
+        try {
+          var raw = localStorage.getItem("theme");
+          if (!raw) return;
+          var data = JSON.parse(raw);
+          var mode = data.state && data.state.theme;
+          if (!mode) return;
+          var dark =
+            mode === "dark" ||
+            (mode === "system" &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches);
+          document.documentElement.classList.toggle("dark", dark);
+        } catch (e) {}
+      })();
+    </script>
+
+    <!-- Title -->
+    <title>Gifted Monitor — Uptime monitoring &amp; instant alerts</title>
+  </head>
+
+  <body>
+    <div id="root"></div>
+
+    <!-- App -->
+    <script type="module" src="/src/main.tsx"></script>
+
+    <!-- Paystack Inline -->
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+  </body>
+</html>

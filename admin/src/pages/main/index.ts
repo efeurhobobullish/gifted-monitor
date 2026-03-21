@@ -1,0 +1,13 @@
+export { default as Dashboard } from "./dashboard";
+export { default as Deposit } from "./deposit";
+export { default as Withdraw } from "./withdraw";
+export { default as Referral } from "./referral";
+export { default as Profile } from "./profile";
+export { default as Community } from "./community";
+export { default as Store } from "./store";
+export { default as Coins } from "./coins";
+export { default as Bots } from "./bots";
+export { default as Templates } from "./templates";
+export { default as Deploy } from "./deploy";
+export { default as Developers } from "./developers";
+export { default as BotLogs } from "./logs";

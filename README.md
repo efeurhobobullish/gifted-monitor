@@ -1,12 +1,14 @@
 <h1 align="center">🟢 Gifted Monitor</h1>
-<p align="center"><b>24/7 uptime monitoring with instant WhatsApp alerts</b></p>
+<p align="center"><b>24/7 uptime monitoring — email OTP, alerts via WhatsApp, Telegram &amp; email</b></p>
+<p align="center"><b>Built by Empire Tech &amp; Gifted Tech</b></p>
 
 <p align="center">
   <a href="https://monitor.giftedtech.co.ke"><img src="https://img.shields.io/badge/LIVE%20APP-monitor.giftedtech.co.ke-green?style=for-the-badge&logo=googlechrome" alt="Live App"/></a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/mauricegift"><img src="https://img.shields.io/badge/GITHUB-GIFTED%20TECH-red?style=for-the-badge&logo=github"/></a>
+  <a href="https://github.com/efeurhobobullish"><img src="https://img.shields.io/badge/GITHUB-EMPIRE%20TECH-blue?style=for-the-badge&logo=github" alt="Empire Tech on GitHub"/></a>
+  <a href="https://github.com/mauricegift"><img src="https://img.shields.io/badge/GITHUB-GIFTED%20TECH-red?style=for-the-badge&logo=github" alt="Gifted Tech on GitHub"/></a>
   <a href="https://github.com/mauricegift/gifted-monitor/stargazers"><img src="https://img.shields.io/github/stars/mauricegift/gifted-monitor?style=social" alt="Stars"/></a>
   <a href="https://github.com/mauricegift/gifted-monitor/network/members"><img src="https://img.shields.io/github/forks/mauricegift/gifted-monitor?style=social" alt="Forks"/></a>
 </p>
@@ -20,22 +22,23 @@
 <details>
 <summary>TAP TO EXPAND</summary>
 
-**Gifted Monitor** is a full-stack uptime monitoring SaaS. It watches your websites 24/7 and sends instant WhatsApp alerts when something goes down — and again when it recovers.
+**Gifted Monitor** is a full-stack uptime monitoring SaaS. It watches your websites 24/7 and sends alerts when something goes down — and again when it recovers.
 
 **Live at:** [https://monitor.giftedtech.co.ke](https://monitor.giftedtech.co.ke)
 
 | Feature | Details |
 |---|---|
-| Uptime Monitoring | HTTP/HTTPS checks via GET, HEAD, or POST |
-| Custom Intervals | Per-monitor check intervals (minimum: 3 mins) |
-| WhatsApp Alerts | Down alert, recovery alert, 24h still-down reminder |
-| OTP Verification | WhatsApp OTP for signup and password reset |
-| JWT Auth | 3-day tokens with 12h sliding refresh |
-| Admin Panel | Manage all users, monitors, and contact messages |
-| Super Admin | First user to register becomes the platform Super Admin |
-| Contact Form | Public contact page saves messages to the database |
-| Multi-DB Support | PostgreSQL, MySQL, or MongoDB adapters |
-| Mobile-Responsive | Hamburger nav, mobile sidebar, full footer on all pages |
+| Uptime monitoring | HTTP/HTTPS checks via GET, HEAD, or POST |
+| Custom intervals | Per-monitor check intervals (minimum enforced in config) |
+| **Signup / OTP** | **Email only** (6-digit code) — requires `EMAIL` + `EMAIL_APP_PASSWORD` (Gmail app password) on the server |
+| **Monitor alerts** | User chooses **WhatsApp**, **Telegram**, and/or **HTML email** (`alert_whatsapp`, `alert_telegram`, `alert_email`) |
+| JWT auth | 3-day tokens with sliding refresh header |
+| Admin panel | Static UI at `backend/public/admin/`; optional React `admin/` app at repo root |
+| Super admin | First user to register becomes the platform Super Admin |
+| Contact form | Public contact page saves messages to the database |
+| Multi-DB support | PostgreSQL, MySQL, or MongoDB adapters |
+| Monorepo | `README.md` at repo root only; **`backend/`** holds API + static site; optional **`frontend/`** & **`admin/`** (React + Vite) |
+| Mobile-responsive | Hamburger nav, mobile sidebar, full footer on static pages |
 
 </details>
 
@@ -50,12 +53,15 @@
 
 - **Runtime:** Node.js (CommonJS)
 - **Framework:** Express 4
-- **Database:** PostgreSQL via Neon (primary), with MySQL and MongoDB adapters available
+- **Database:** PostgreSQL (recommended), MySQL, or MongoDB — chosen from `DATABASE_URL`
 - **Auth:** JWT (`jsonwebtoken`) + bcrypt (`bcryptjs`, 12 rounds)
-- **HTTP Client:** Axios (for pinging monitors)
-- **Security:** Helmet, express-rate-limit
-- **Frontend:** Vanilla JS, multi-page HTML, Tailwind CDN, Font Awesome 6.5
-- **Notifications:** WhatsApp Cloud API (Meta)
+- **HTTP client:** Axios (pinging monitors)
+- **Security:** Helmet, express-rate-limit, CORS from `ALLOWED_ORIGINS`
+- **Email:** Nodemailer + Gmail app password (`utils/sendEmail.js`, `template/email.js`, `utils/otpEmail.js`)
+- **WhatsApp:** Meta WhatsApp Cloud API — **monitoring alerts only** (not signup OTP)
+- **Telegram:** Bot API (`libs/telegram.js`) — optional monitor alerts
+- **Static frontend:** Vanilla JS, multi-page HTML in `backend/public/`, Tailwind CDN, Font Awesome
+- **Optional apps:** React + TypeScript + Vite in `frontend/` and `admin/`
 
 </details>
 
@@ -68,45 +74,45 @@
 <details>
 <summary>TAP TO EXPAND</summary>
 
+**Repo root** (documentation only):
+
 ```
 gifted-monitor/
-├── index.js                  # Entry point — starts server + ping engine
-├── config.js                 # All env vars with defaults
-├── lib/
-│   ├── server.js             # Express app setup, middleware, static files
-│   ├── auth.js               # requireAuth, JWT verify, role middleware
-│   ├── ping.js               # Monitoring engine (interval-based pinger)
-│   ├── whatsapp.js           # WhatsApp Cloud API helpers
-│   └── db/
-│       ├── index.js          # DB adapter selector (auto-detects from URL)
-│       └── adapters/
-│           ├── postgres.js   # PostgreSQL adapter (recommended)
-│           ├── mysql.js      # MySQL adapter
-│           └── mongo.js      # MongoDB adapter
-├── routes/
-│   ├── auth.js               # /api/auth/* endpoints
-│   ├── monitors.js           # /api/monitors/* endpoints
-│   ├── admin.js              # /api/admin/* endpoints
-│   └── public.js             # /api/contact, /api/status
-└── public/
-    ├── index.html            # Landing page
-    ├── about/                # About page
-    ├── contact/              # Contact form page
-    ├── privacy/              # Privacy policy
-    ├── terms/                # Terms of service
-    ├── auth/
-    │   ├── login/
-    │   ├── signup/
-    │   ├── forgot/
-    │   ├── reset/
-    │   └── verify/
-    ├── monitors/             # User monitor dashboard + detail view
-    ├── profile/              # User profile & settings
-    ├── admin/                # Admin panel (dashboard, users, monitors, messages)
-    └── assets/
-        ├── style.css         # Global styles (custom responsive nav, animations)
-        └── app.js            # Shared JS (auth helpers, renderLayout, scroll-lock)
+├── README.md
+├── backend/                    # Node API + Gifted Monitor web UI
+│   ├── package.json
+│   ├── index.js
+│   ├── .env                    # from .env.example (not committed)
+│   ├── app.json
+│   ├── eslint.config.mjs
+│   ├── LICENSE
+│   ├── config/index.js
+│   ├── controllers/            # auth, monitors, admin, contact
+│   ├── routes/
+│   ├── libs/
+│   │   ├── server.js
+│   │   ├── auth.js
+│   │   ├── ping.js
+│   │   ├── whatsapp.js
+│   │   ├── telegram.js
+│   │   └── notify.js           # routes alerts: WA / Telegram / email
+│   ├── middleware/             # cors.js, auth.js
+│   ├── model/
+│   │   ├── index.js
+│   │   └── db/adapters/        # postgres, mysql, mongo
+│   ├── template/
+│   │   ├── email.js            # HTML emails
+│   │   └── whatsapp.js         # Meta template name mapping
+│   ├── utils/
+│   │   ├── sanitize.js
+│   │   ├── sendEmail.js
+│   │   └── otpEmail.js         # signup / reset OTP (email only)
+│   └── public/                 # landing, auth, monitors, profile, admin HTML, assets
+├── frontend/                   # optional React + Vite (see frontend/README.md)
+└── admin/                      # optional React + Vite (see admin/README.md)
 ```
+
+Set **`VITE_BASE_URL`** (no trailing slash) to your backend URL, e.g. `http://localhost:58420`.
 
 </details>
 
@@ -119,41 +125,55 @@ gifted-monitor/
 <details>
 <summary>TAP TO EXPAND</summary>
 
-Create a `.env` file in the project root:
+Create a **`.env`** file in the **`backend/`** folder (copy from `backend/.env.example`):
 
 ```env
 # Server
-PORT=5000
+PORT=58420
 NODE_ENV=production
 
-# Database (PostgreSQL recommended)
+# Database — adapter auto-detected from URL prefix
 DATABASE_URL=postgresql://user:password@host/dbname
 
-# Auth — use a strong random string
+# Auth — use a strong random string in production
 JWT_SECRET=your_strong_random_secret_here
 
-# WhatsApp Cloud API
-WHATSAPP_TOKEN=your_meta_whatsapp_api_token
-WHATSAPP_PHONE_ID=your_whatsapp_phone_number_id
+# Email (required for signup / forgot-password / login OTP)
+EMAIL=your@gmail.com
+EMAIL_APP_PASSWORD=your_gmail_app_password
+# Legacy: PASSWORD= also accepted as app password
 
-# WhatsApp Message Template Names
-# You choose the names — they must match exactly what you registered in Meta
-WA_TEMPLATE_OTP=your_otp_template_name
-WA_TEMPLATE_MONITOR_CREATED=your_monitor_created_template_name
-WA_TEMPLATE_SITE_DOWN=your_site_down_template_name
-WA_TEMPLATE_SITE_RECOVERED=your_site_recovered_template_name
+EMAIL_APP_URL=https://monitor.giftedtech.co.ke
+EMAIL_FROM_NAME=Gifted Monitor
+EMAIL_LOGO_URL=
 
-# Monitoring Engine
+# WhatsApp Cloud API (monitor alerts — not OTP)
+WHATSAPP_TOKEN=
+WHATSAPP_PHONE_ID=
+
+# WhatsApp template names (must match Meta Business)
+WA_TEMPLATE_OTP=gifted_monitor_otp
+WA_TEMPLATE_MONITOR_CREATED=gifted_monitor_created
+WA_TEMPLATE_SITE_DOWN=gifted_monitor_down
+WA_TEMPLATE_SITE_RECOVERED=gifted_monitor_back_online
+
+# Telegram (optional — monitor alerts)
+TELEGRAM_BOT_TOKEN=
+
+# Monitoring engine
 PING_CHECK_INTERVAL_SECS=10
 MIN_PING_INTERVAL_MINS=3
 
-# Timezone
+# Timezone (WhatsApp / formatting)
 TIMEZONE=Africa/Nairobi
+
+# CORS — comma separated
+ALLOWED_ORIGINS=https://monitor.giftedtech.co.ke,https://anotherapp.co.ke
 ```
 
-> **Security note:** Always override `JWT_SECRET` in production. The default fallback in `config.js` is not secure.
+> **Security note:** Always override `JWT_SECRET` in production. The default in `config/index.js` is not secure.
 
-> **Template names:** The values for `WA_TEMPLATE_*` are completely up to you — name them whatever you like in Meta, then use those exact same names here. They do not need to start with `gifted_monitor`.
+> **OTP:** Signup and password flows use **email only**. `WA_TEMPLATE_OTP` remains in config for backwards compatibility but user verification codes are **not** sent via WhatsApp.
 
 </details>
 
@@ -166,29 +186,17 @@ TIMEZONE=Africa/Nairobi
 <details>
 <summary>TAP TO EXPAND</summary>
 
-All tables are created automatically on first startup — no manual migrations needed.
+All tables are created automatically on first startup — no manual migrations for base schema. Adapters add columns over time (`ALTER ... IF NOT EXISTS` / safe catches).
 
-**PostgreSQL schema (auto-created):**
+**Users** (conceptual): username, email, whatsapp, password hash, verification, roles, avatar, `notify_down` / `notify_up`, **`telegram_chat_id`**, **`alert_whatsapp`** / **`alert_telegram`** / **`alert_email`**, etc.
 
-```sql
-users (id, username, email, whatsapp, password_hash, is_verified,
-       is_admin, is_superadmin, is_disabled, avatar, created_at)
+**Monitors**, **check_history**, **otp_codes**, **contact_messages** — see `backend/model/db/adapters/`.
 
-monitors (id, user_id, name, url, method, body, interval_mins,
-          last_status, last_checked_at, uptime_pct,
-          notify_down, notify_up, is_down, down_since, created_at)
+To switch databases, change **`DATABASE_URL`**:
 
-check_history (id, monitor_id, status, response_time, error_msg, checked_at)
-
-otp_codes (id, email, code, type, expires_at, used, created_at)
-
-contact_messages (id, name, email, whatsapp, subject, message, is_read, created_at)
-```
-
-To switch databases, change `DATABASE_URL` to the appropriate connection string. The adapter is chosen automatically:
-- `postgresql://` → PostgreSQL adapter
-- `mysql://` → MySQL adapter
-- `mongodb://` → MongoDB adapter
+- `postgresql://` → PostgreSQL  
+- `mysql://` → MySQL  
+- `mongodb://` or `mongodb+srv://` → MongoDB  
 
 </details>
 
@@ -207,36 +215,26 @@ Go to [business.facebook.com](https://business.facebook.com) and create or log i
 
 ### Step 2 — Verify Your Account & Business
 
-- Verify your **personal identity** (government-issued ID such as national ID, passport, or driver's licence)
-- Verify your **business** by submitting relevant government/business documents (business registration certificate, tax PIN, utility bill, etc.)
-- Verification can take a few days. You cannot send messages to non-test numbers until this is approved.
+- Verify your **personal identity** (government-issued ID)
+- Verify your **business** with documents as required by Meta  
+- You cannot send messages to non-test numbers until approved.
 
 ### Step 3 — Create a Developer App
 
-Go to [developers.facebook.com](https://developers.facebook.com), create a new app, and add the **WhatsApp** product to it.
+Go to [developers.facebook.com](https://developers.facebook.com), create an app, add the **WhatsApp** product.
 
-### Step 4 — Get Your Credentials
+### Step 4 — Credentials
 
-From the WhatsApp dashboard in your developer app:
-- Copy your **Temporary or Permanent Access Token** → `WHATSAPP_TOKEN`
-- Copy your **Phone Number ID** → `WHATSAPP_PHONE_ID`
+- **Access Token** → `WHATSAPP_TOKEN`  
+- **Phone Number ID** → `WHATSAPP_PHONE_ID`
 
-### Step 5 — Create & Submit Message Templates
+### Step 5 — Message Templates (monitoring alerts)
 
-Go to [business.facebook.com](https://business.facebook.com) → WhatsApp Manager → Message Templates.
+Create templates whose **names** match `WA_TEMPLATE_MONITOR_CREATED`, `WA_TEMPLATE_SITE_DOWN`, `WA_TEMPLATE_SITE_RECOVERED`. Parameters must match what `backend/libs/whatsapp.js` sends.
 
-Create and submit four templates for approval. You choose the names — use whatever names make sense to you, then set those same names in your `.env`:
+> Template approval can take 24–48 hours. Alerts log errors if templates are missing or rejected.
 
-| ENV Variable | Purpose | Required Parameters |
-|---|---|---|
-| `WA_TEMPLATE_OTP` | Sends 6-digit OTP for signup and password reset | `{{1}}` = OTP code |
-| `WA_TEMPLATE_MONITOR_CREATED` | Confirmation when a monitor is added | `{{1}}` = monitor name, `{{2}}` = URL |
-| `WA_TEMPLATE_SITE_DOWN` | Alert when a monitored site goes down | `{{1}}` = monitor name, `{{2}}` = error |
-| `WA_TEMPLATE_SITE_RECOVERED` | Alert when a site comes back online | `{{1}}` = monitor name, `{{2}}` = downtime |
-
-> Template approval can take 24–48 hours. Alerts will fail silently if templates are pending or rejected.
-
-> All users must have a valid WhatsApp number to receive alerts and to complete OTP verification.
+> **Monitoring only:** WhatsApp is used for **down / up / monitor-created** alerts when the user enables **`alert_whatsapp`**. It is **not** used for signup OTP (those are **email**).
 
 </details>
 
@@ -244,20 +242,80 @@ Create and submit four templates for approval. You choose the names — use what
 
 ---
 
-## 7. RUNNING THE APP
+## 7. EMAIL (GMAIL) SETUP
 
 <details>
 <summary>TAP TO EXPAND</summary>
+
+1. Enable **2-Step Verification** on the Google account.  
+2. Create a Gmail **App Password** (Security → App passwords).  
+3. Set **`EMAIL`** and **`EMAIL_APP_PASSWORD`** in `backend/.env`.
+
+**Used for:**
+
+- **OTP emails** — signup, resend, unverified login, forgot password (`utils/otpEmail.js`).  
+- **Optional monitor alerts** — when **`alert_email`** is true (`libs/notify.js` + `template/email.js`).
+
+If email is not configured, signup may return **503** with a clear error until the server is configured.
+
+</details>
+
+<img src='https://i.imgur.com/LyHic3i.gif'/>
+
+---
+
+## 8. TELEGRAM BOT (OPTIONAL)
+
+<details>
+<summary>TAP TO EXPAND</summary>
+
+1. Create a bot with **@BotFather** → set **`TELEGRAM_BOT_TOKEN`** in `backend/.env`.  
+2. User gets their numeric **chat id** (e.g. from @userinfobot), then calls **`POST /api/auth/telegram-link`** with `{ "chat_id": "..." }` while authenticated.  
+3. User must **/start** your bot or Telegram will not deliver messages.  
+4. Enable **`alert_telegram`** in **`POST /api/auth/notification-prefs`** to receive **down / up / monitor-created** alerts on Telegram.
+
+</details>
+
+<img src='https://i.imgur.com/LyHic3i.gif'/>
+
+---
+
+## 9. RUNNING THE APP
+
+<details>
+<summary>TAP TO EXPAND</summary>
+
+**Backend (required)**
 
 ```bash
+cd backend
 npm install
-PORT=5000 node index.js
+npm start
 ```
 
-On startup the app will:
-1. Connect to the database and auto-create all tables if they don't exist
-2. Start the Express server on the configured port
-3. Start the ping engine — checks every `PING_CHECK_INTERVAL_SECS` seconds for due monitors
+Default port **`58420`** or **`PORT`** from `.env`.
+
+**Optional — frontend**
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+**Optional — admin (React)**
+
+```bash
+cd admin
+npm install
+npm run dev
+```
+
+On startup the backend will:
+
+1. Connect to the database and create/update schema as needed  
+2. Start Express + static files from `backend/public/`  
+3. Start the ping engine — every `PING_CHECK_INTERVAL_SECS` seconds it looks for due monitors  
 
 </details>
 
@@ -265,17 +323,17 @@ On startup the app will:
 
 ---
 
-## 8. AUTHENTICATION SYSTEM
+## 10. AUTHENTICATION SYSTEM
 
 <details>
 <summary>TAP TO EXPAND</summary>
 
-- **Registration:** Email + WhatsApp number required. A 6-digit OTP is sent to WhatsApp. The account stays unverified until the OTP is confirmed.
-- **Login:** Returns a JWT with a 3-day expiry. The token refreshes silently within a 12-hour sliding window.
-- **Password Reset:** Sends a new OTP to the user's registered WhatsApp number.
-- **Rate Limiting:** Signup, login, and OTP endpoints are rate-limited to prevent brute-force attacks.
-- **Token Storage:** JWT is stored in `localStorage` on the client as `gm_token`.
-- **OTP Expiry:** OTPs expire after 10 minutes. Users must request a new one if the window is missed.
+- **Registration:** Email + WhatsApp number required on the form. A **6-digit OTP is sent to email** (not WhatsApp). Account stays unverified until OTP is confirmed.  
+- **Login:** JWT with 3-day expiry; **`x-refresh-token`** header for sliding refresh when close to expiry.  
+- **Password reset:** OTP sent **by email** after forgot-password.  
+- **Rate limiting:** Signup, login, OTP endpoints are limited against brute force.  
+- **Client storage:** JWT often stored as `gm_token` in `localStorage`.  
+- **OTP expiry:** 10 minutes; request a new code via resend if needed.  
 
 </details>
 
@@ -283,32 +341,21 @@ On startup the app will:
 
 ---
 
-## 9. MONITORING ENGINE
+## 11. MONITORING ENGINE
 
 <details>
 <summary>TAP TO EXPAND</summary>
 
-The ping engine runs on a fixed ticker (`PING_CHECK_INTERVAL_SECS`, default 10s). On each tick:
+The ping engine runs on a fixed ticker (`PING_CHECK_INTERVAL_SECS`, default 10s). On each tick it finds monitors that are **due** based on `interval_mins` and `last_checked`.
 
-1. Fetches all monitors where `next_check_at <= now()`
-2. Pings each due monitor using its configured method (GET / HEAD / POST)
-3. On failure — waits 8 seconds, then retries once to avoid false alarms from transient blips
-4. Records the result in `check_history` (retains last 60 checks per monitor)
-5. Recalculates `uptime_pct` from the last 60 checks
-6. Sends a WhatsApp alert if status changed (up → down or down → up)
-7. Sends a "Still Down" reminder every 24 hours for monitors that remain offline
+1. Pings using the monitor’s method (GET / HEAD / POST)  
+2. On failure — **waits 8 seconds and retries once** to reduce false alarms  
+3. Writes **`check_history`** (last ~60 checks per monitor)  
+4. Updates **`uptime_pct`**  
+5. Sends alerts through **`libs/notify.js`** according to user **channel** flags and per-monitor **`notify_down` / `notify_up`**  
+6. **Still down** reminder every **24 hours** while the incident continues  
 
-**Monitor configuration options:**
-
-| Field | Description |
-|---|---|
-| Name | Human-readable label for the monitor |
-| URL | Full URL to monitor (must include `https://` or `http://`) |
-| Method | GET, HEAD, or POST |
-| Body | JSON or plain text body (POST only) |
-| Interval | Check frequency in minutes (minimum: 3) |
-| Notify Down | Toggle down alerts for this specific monitor |
-| Notify Up | Toggle recovery alerts for this specific monitor |
+**Per-monitor options:** name, URL, path, method, body (POST), interval, `notify_down`, `notify_up`.
 
 </details>
 
@@ -316,22 +363,22 @@ The ping engine runs on a fixed ticker (`PING_CHECK_INTERVAL_SECS`, default 10s)
 
 ---
 
-## 10. ALERT & NOTIFICATION SYSTEM
+## 12. ALERT & NOTIFICATION SYSTEM
 
 <details>
 <summary>TAP TO EXPAND</summary>
 
-All alerts are sent via the WhatsApp Cloud API using approved Meta message templates.
+| Channel | User field | Default | What it sends |
+|--------|------------|---------|----------------|
+| **WhatsApp** | `alert_whatsapp` | **on** | Meta template messages (down, recovered, monitor created) |
+| **Telegram** | `alert_telegram` | **off** | Bot HTML messages (same events) — requires linked `chat_id` |
+| **Email** | `alert_email` | **off** | HTML from `template/email.js` |
 
-| Event | What Gets Sent |
-|---|---|
-| Monitor goes down | Down alert with error code + timestamp |
-| Monitor recovers | Recovery alert with total downtime duration |
-| Still down after 24h | Ongoing reminder alert |
-| New monitor added | Confirmation message |
-| Signup / password reset | 6-digit OTP |
+Per-monitor **`notify_down`** / **`notify_up`** still control whether **that monitor** triggers down/up notifications.
 
-Users can disable all notifications globally in their profile settings, or toggle alerts per monitor individually.
+Update globals via **`POST /api/auth/notification-prefs`** with `notify_down`, `notify_up`, `alert_whatsapp`, `alert_telegram`, `alert_email`.
+
+**Signup / login OTP** is **never** sent on these channels — **email only**.
 
 </details>
 
@@ -339,25 +386,24 @@ Users can disable all notifications globally in their profile settings, or toggl
 
 ---
 
-## 11. USER ROLES & PERMISSIONS
+## 13. USER ROLES & PERMISSIONS
 
 <details>
 <summary>TAP TO EXPAND</summary>
 
-| Role | How Assigned | Capabilities |
+| Role | How assigned | Capabilities |
 |---|---|---|
-| **Guest** | Not logged in | View public pages, submit contact form |
-| **User** | Default on signup | Manage own monitors and profile settings |
-| **Admin** | Promoted by Super Admin | View all users/monitors, manage contact messages |
-| **Super Admin** | First user to register | All admin powers + promote/demote other admins |
+| **Guest** | Not logged in | Public pages, contact form |
+| **User** | Default on signup | Own monitors, profile, notification prefs |
+| **Admin** | Promoted by Super Admin | View/manage users, monitors, contact messages |
+| **Super Admin** | **First user registered** | Full admin powers + promote/demote admins |
 
-### ⚠️ Important: First User Registered = Super Admin
+### First user = Super Admin
 
-**The very first account created on the platform automatically becomes the Super Admin.** If no users exist when the first signup occurs, that account gets both `is_admin` and `is_superadmin` set to `true`.
+The **first successful signup** gets `is_admin` and `is_superadmin`. **Register your own account first** after deploy before sharing the URL.
 
-**What this means for you:**
-- After deploying, immediately register your own account before sharing the app URL with anyone else
-- If you ever lose super admin access, you can manually run `UPDATE users SET is_admin=true, is_superadmin=true WHERE email='your@email.com';` against the database
+If you lose access, run SQL against your DB, e.g.  
+`UPDATE users SET is_admin=true, is_superadmin=true WHERE email='you@example.com';`
 
 </details>
 
@@ -365,19 +411,21 @@ Users can disable all notifications globally in their profile settings, or toggl
 
 ---
 
-## 12. ADMIN PANEL
+## 14. ADMIN PANEL
 
 <details>
 <summary>TAP TO EXPAND</summary>
 
-Accessible at `/admin/` — requires Super Admin privileges.
+**Built-in static admin** (served by Express): paths under **`/admin/`** in `backend/public/admin/` — requires admin JWT (see your deployed app).
 
-| Section | Path | What You Can Do |
-|---|---|---|
-| Dashboard | `/admin/` | View platform-wide stats (users, monitors, up/down counts) |
-| Users | `/admin/users/` | Search, view, edit, suspend, promote, demote, or delete users |
-| Monitors | `/admin/monitors/` | View and manage all monitors across every account |
-| Messages | `/admin/messages/` | Read contact form submissions and mark them as read |
+**Optional React admin** at repo root **`admin/`** — run with `npm run dev`, point API to backend (`VITE_BASE_URL`).
+
+| Area | Typical use |
+|---|---|
+| Dashboard | Stats, users, monitors |
+| Users | Search, edit, suspend, roles |
+| Monitors | Cross-account monitor view |
+| Messages | Contact form inbox |
 
 </details>
 
@@ -385,62 +433,56 @@ Accessible at `/admin/` — requires Super Admin privileges.
 
 ---
 
-## 13. API REFERENCE
+## 15. API REFERENCE
 
 <details>
 <summary>AUTH — /api/auth</summary>
 
-| Method | Endpoint | Auth Required | Description |
+| Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| POST | `/signup` | No | Register new account (sends OTP to WhatsApp) |
-| POST | `/verify-otp` | No | Verify signup OTP |
-| POST | `/login` | No | Login, returns JWT |
-| POST | `/forgot-password` | No | Request password reset OTP |
-| POST | `/reset-password` | No | Reset password using OTP |
-| GET | `/me` | Yes | Get current user profile |
-| PUT | `/me` | Yes | Update name, WhatsApp number, or password |
-| PUT | `/avatar` | Yes | Update profile avatar (base64 encoded) |
-| PUT | `/notification-prefs` | Yes | Toggle global notification preference |
+| POST | `/signup` | No | Register — sends **email** OTP |
+| POST | `/verify-otp` | No | Verify signup or reset OTP |
+| POST | `/resend-otp` | No | Resend **email** OTP |
+| POST | `/login` | No | Login; may email OTP if unverified |
+| POST | `/forgot-password` | No | Request reset **email** OTP |
+| POST | `/reset-password` | No | Set new password |
+| POST | `/change-password` | Yes | Change password |
+| GET | `/me` | Yes | Profile + `telegram_linked`, `alert_*` |
+| POST | `/telegram-link` | Yes | Link/unlink Telegram `chat_id` |
+| PUT | `/avatar` | Yes | Update avatar (base64) |
+| POST | `/update-whatsapp` | Yes | Change WhatsApp (password required) |
+| POST | `/notification-prefs` | Yes | `notify_*`, `alert_whatsapp`, `alert_telegram`, `alert_email` |
 
 </details>
 
 <details>
 <summary>MONITORS — /api/monitors</summary>
 
-| Method | Endpoint | Auth Required | Description |
+| Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| GET | `/` | Yes | List all monitors for the current user |
-| POST | `/` | Yes | Create a new monitor |
-| GET | `/:id` | Yes | Get monitor details + check history |
-| PUT | `/:id` | Yes | Update monitor settings |
-| DELETE | `/:id` | Yes | Delete a monitor |
-| POST | `/:id/ping` | Yes | Manually trigger a ping |
+| GET | `/` | Yes | List monitors |
+| POST | `/` | Yes | Create monitor |
+| GET | `/:id` | Yes | Detail + history |
+| PUT | `/:id` | Yes | Update |
+| DELETE | `/:id` | Yes | Delete |
+| POST | `/:id/ping` | Yes | Manual ping |
 
 </details>
 
 <details>
 <summary>ADMIN — /api/admin</summary>
 
-| Method | Endpoint | Auth Required | Description |
-|---|---|---|---|
-| GET | `/stats` | Admin | Platform-wide statistics |
-| GET | `/users` | Admin | Paginated user list (supports search) |
-| GET | `/users/:id` | Admin | Single user profile + their monitors |
-| PUT | `/users/:id` | Admin | Edit user (promote, suspend, etc.) |
-| DELETE | `/users/:id` | Super Admin | Delete a user (requires password confirmation) |
-| GET | `/monitors` | Admin | All monitors across all users |
-| GET | `/contact` | Admin | Paginated contact form submissions |
-| PUT | `/contact/:id/read` | Admin | Mark a message as read |
+Requires **admin** JWT. Endpoints for stats, users, monitors, contact messages — see `backend/controllers/adminController.js`.
 
 </details>
 
 <details>
-<summary>PUBLIC — No auth required</summary>
+<summary>PUBLIC</summary>
 
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | `/api/contact` | Submit a contact/support message |
-| GET | `/api/status` | System health check |
+| POST | `/api/contact` | Contact form |
+| GET | `/api/status` | Health / uptime JSON |
 
 </details>
 
@@ -448,37 +490,28 @@ Accessible at `/admin/` — requires Super Admin privileges.
 
 ---
 
-## 14. IMPORTANT NOTES
+## 16. IMPORTANT NOTES
 
 <details>
 <summary>TAP TO EXPAND</summary>
 
-**First user is Super Admin**
-Register your own account immediately after deployment. Do not share the signup link before doing so.
+**First user is Super Admin** — register immediately after deployment.
 
-**WhatsApp templates must be pre-approved**
-Alerts silently fail if templates are pending or rejected in Meta Business Manager. Approval takes 24–48 hours. You must also have your business verified before messaging non-test numbers.
+**Email is required for OTP** — configure Gmail app password or verification flows return **503**.
 
-**Template names are your choice**
-The `WA_TEMPLATE_*` env values are just the names you gave your templates in Meta. They do not need to follow any specific naming pattern.
+**WhatsApp templates** — used for **monitoring alerts** when `alert_whatsapp` is on; **not** for signup codes.
 
-**Monitor retry logic**
-Before sending a down alert, the engine waits 8 seconds and retries once. This prevents false alarms from brief network blips.
+**Telegram** — user must link chat id and enable `alert_telegram`; bot must receive `/start`.
 
-**Uptime percentage**
-Calculated from the last 60 checks only. Monitors with fewer than 60 checks show uptime based on available data.
+**Monitor retry** — 8s delay + second request before declaring down.
 
-**Avatar storage**
-Avatars are stored as base64 strings in the `users` table. Resize large images on the client side before uploading.
+**Uptime %** — derived from recent check history (see adapter logic).
 
-**Admin access**
-Both `is_admin` AND `is_superadmin` must be true to access the admin panel.
+**Avatars** — base64 in DB; keep size reasonable.
 
-**Database adapter**
-Chosen automatically at startup from `DATABASE_URL`. PostgreSQL via Neon is the tested and recommended setup.
+**CORS** — set `ALLOWED_ORIGINS` for production frontends.
 
-**CSS architecture**
-The navigation responsiveness does not rely on Tailwind CDN. Custom classes in `style.css` handle all breakpoints so the nav works even if Tailwind is slow or blocked.
+**CSS** — custom responsive nav in `style.css` works even if Tailwind CDN is slow.
 
 </details>
 
@@ -486,15 +519,11 @@ The navigation responsiveness does not rely on Tailwind CDN. Custom classes in `
 
 ---
 
-## 15. UPDATES & CONTACT
+## UPDATES & CONTACT
 
-<details>
-<summary>TAP TO EXPAND</summary>
-
-- **[Contact Support](https://monitor.giftedtech.co.ke/contact/) for questions, bug reports, or feedback**
-- **Join the [WhatsApp Channel](https://whatsapp.com/channel/0029Vb6lNd511ulWbxu1cT3A) for updates and announcements**
-- **Visit the [Portfolio](https://me.giftedtech.co.ke) to explore more projects by Gifted Tech**
-
-</details>
+- **[Contact Support](https://monitor.giftedtech.co.ke/contact/)** — questions, bugs, feedback  
+- **[WhatsApp Channel](https://whatsapp.com/channel/0029Vb6lNd511ulWbxu1cT3A)** — updates and announcements  
+- **[Empire Tech — portfolio](https://empiretech.net.ng)** — projects &amp; work by Empire Tech  
+- **[Gifted Tech — portfolio](https://me.giftedtech.co.ke)** — projects &amp; work by Gifted Tech  
 
 <img src='https://i.imgur.com/LyHic3i.gif'/>
