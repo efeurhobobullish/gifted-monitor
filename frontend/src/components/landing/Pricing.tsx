@@ -50,7 +50,7 @@ export default function Pricing() {
   return (
     <section id="pricing" className="py-20 relative main">
       {/* Header */}
-      <ScrollAnimation className="text-center mb-16 max-w-2xl mx-auto">
+      <ScrollAnimation from="up" className="text-center mb-16 max-w-2xl mx-auto">
         <h2 className="text-4xl md:text-5xl font-bold mb-4 font-space">
           Starter, Elite & Pro
         </h2>
@@ -63,7 +63,12 @@ export default function Pricing() {
       {/* Plans */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {plans.map((plan, index) => (
-          <PricingCard key={plan.name} plan={plan} delay={index * 0.1} />
+          <PricingCard
+            key={plan.name}
+            plan={plan}
+            delay={Math.min(index * 0.04, 0.12)}
+            fromIndex={index}
+          />
         ))}
       </div>
     </section>

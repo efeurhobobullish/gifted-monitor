@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import {
   Globe,
   Activity,
@@ -7,7 +6,11 @@ import {
   LineChart,
   Clock,
 } from "lucide-react";
-import { ScrollAnimation } from "../ui";
+import {
+  ScrollAnimation,
+  scrollRevealFromIndex,
+  scrollRevealStaggerDelay,
+} from "../ui";
 
 const features = [
   {
@@ -52,14 +55,7 @@ export default function Deploy() {
   return (
     <section className="py-24">
       <div className="main">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="max-w-2xl mb-16"
-        >
+        <ScrollAnimation from="left" amount={0.15} className="max-w-2xl mb-16">
           <h2 className="text-4xl md:text-5xl font-space font-bold mb-4">
             Monitoring built for clarity
           </h2>
@@ -67,19 +63,17 @@ export default function Deploy() {
             Gifted Monitor runs checks from the cloud — you define what to watch
             and how you want to be notified.
           </p>
-        </motion.div>
+        </ScrollAnimation>
 
-        {/* Grid */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((item, idx) => {
             const Icon = item.icon;
             return (
-              <motion.div
+              <ScrollAnimation
                 key={item.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: idx * 0.05 }}
+                from={scrollRevealFromIndex(idx)}
+                delay={scrollRevealStaggerDelay(idx, { step: 0.03 })}
+                amount={0.12}
                 className="border border-line rounded-xl p-6 bg-background"
               >
                 <div className="flex items-start gap-4">
@@ -88,23 +82,20 @@ export default function Deploy() {
                   </div>
 
                   <div className="space-y-1">
-                    <h3 className="font-semibold text-sm">
-                      {item.name}
-                    </h3>
+                    <h3 className="font-semibold text-sm">{item.name}</h3>
                     <p className="text-xs text-muted leading-relaxed">
                       {item.description}
                     </p>
                   </div>
                 </div>
-              </motion.div>
+              </ScrollAnimation>
             );
           })}
         </div>
 
-        {/* CTA */}
         <ScrollAnimation
-          once={true}
-          duration={0.6}
+          duration={0.35}
+          from="up"
           className="flex justify-center mt-20"
         >
           <button type="button" className="btn btn-primary px-10 h-12 rounded-full">

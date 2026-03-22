@@ -1,6 +1,37 @@
-import { motion } from "framer-motion";
 import { Quote } from "lucide-react";
-import { ScrollAnimation } from "../ui";
+import {
+  ScrollAnimation,
+  scrollRevealFromIndex,
+  scrollRevealStaggerDelay,
+} from "../ui";
+
+function TestimonialCard({
+  quote,
+  author,
+  role,
+  index,
+}: {
+  quote: string;
+  author: string;
+  role: string;
+  index: number;
+}) {
+  return (
+    <ScrollAnimation
+      from={scrollRevealFromIndex(index)}
+      delay={scrollRevealStaggerDelay(index)}
+      amount={0.15}
+      className="border border-line rounded-2xl p-8 bg-secondary/50 backdrop-blur"
+    >
+      <Quote className="text-primary mb-4" size={28} />
+      <p className="text-main text-sm leading-relaxed mb-6">{quote}</p>
+      <div>
+        <p className="font-semibold text-sm text-main">{author}</p>
+        <p className="text-xs text-muted">{role}</p>
+      </div>
+    </ScrollAnimation>
+  );
+}
 
 const testimonials = [
   {
@@ -27,7 +58,7 @@ export default function Testimonials() {
   return (
     <section id="about" className="py-24 relative overflow-hidden">
       <div className="main">
-        <ScrollAnimation className="text-center mb-16 max-w-2xl mx-auto">
+        <ScrollAnimation from="up" className="text-center mb-16 max-w-2xl mx-auto">
           <h2 className="text-4xl md:text-5xl font-bold font-space text-primary-2 mb-4">
             Teams that care about uptime
           </h2>
@@ -39,23 +70,7 @@ export default function Testimonials() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {testimonials.map((t, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
-              className="border border-line rounded-2xl p-8 bg-secondary/50 backdrop-blur"
-            >
-              <Quote className="text-primary mb-4" size={28} />
-              <p className="text-main text-sm leading-relaxed mb-6">
-                {t.quote}
-              </p>
-              <div>
-                <p className="font-semibold text-sm text-main">{t.author}</p>
-                <p className="text-xs text-muted">{t.role}</p>
-              </div>
-            </motion.div>
+            <TestimonialCard key={i} index={i} {...t} />
           ))}
         </div>
       </div>

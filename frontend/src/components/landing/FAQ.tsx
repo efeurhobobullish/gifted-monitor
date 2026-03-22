@@ -1,7 +1,11 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
-import { ScrollAnimation } from "../ui";
+import {
+  ScrollAnimation,
+  scrollRevealFromIndex,
+  scrollRevealStaggerDelay,
+} from "../ui";
 
 interface FAQItem {
   question: string;
@@ -64,11 +68,10 @@ function FAQItem({
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
+    <ScrollAnimation
+      from={scrollRevealFromIndex(index)}
+      delay={scrollRevealStaggerDelay(index)}
+      amount={0.15}
       className="rounded-xl border-2 bg-secondary border-line overflow-hidden w-full"
     >
       <button
@@ -105,7 +108,7 @@ function FAQItem({
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </ScrollAnimation>
   );
 }
 
@@ -116,7 +119,7 @@ export default function FAQ() {
       className="py-20 px-4 relative main"
     >
       {/* Header */}
-      <ScrollAnimation className="text-center mb-16 max-w-2xl mx-auto">
+      <ScrollAnimation from="up" className="text-center mb-16 max-w-2xl mx-auto">
         <h2 className="text-4xl md:text-5xl font-bold font-space text-primary-2 mb-4">
           Frequently Asked Questions
         </h2>

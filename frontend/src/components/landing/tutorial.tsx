@@ -4,7 +4,7 @@ export default function Tutorial() {
   return (
     <section id="tutorial" className="py-20 relative main">
       {/* Header */}
-      <ScrollAnimation className="text-center mb-16 max-w-2xl mx-auto">
+      <ScrollAnimation from="up" className="text-center mb-16 max-w-2xl mx-auto">
         <h2 className="text-4xl md:text-5xl font-bold mb-4 font-space">
           Getting started with Gifted Monitor
         </h2>
@@ -15,7 +15,7 @@ export default function Tutorial() {
       </ScrollAnimation>
 
       {/* Video */}
-      <ScrollAnimation>
+      <ScrollAnimation from="left">
         <div className="max-w-3xl mx-auto space-y-4">
           <div className="w-full h-[500px] rounded-xl overflow-hidden border border-line bg-background">
             <iframe

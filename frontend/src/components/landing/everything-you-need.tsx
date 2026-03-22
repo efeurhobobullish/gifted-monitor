@@ -7,7 +7,7 @@ import {
   ShieldCheck,
   Zap,
 } from "lucide-react";
-import { ScrollAnimation } from "../ui";
+import { ScrollAnimation, scrollRevealFromIndex } from "../ui";
 
 const FEATURES: {
   title: string;
@@ -65,7 +65,10 @@ export default function EverythingYouNeed() {
       />
 
       <div className="main relative z-10">
-        <ScrollAnimation className="mx-auto mb-16 max-w-2xl text-center md:mb-20">
+        <ScrollAnimation
+          from="up"
+          className="mx-auto mb-16 max-w-2xl text-center md:mb-20"
+        >
           <span className="inline-flex items-center rounded-full bg-primary/12 px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-primary shadow-[0_0_28px_-6px_rgba(34,197,94,0.45)]">
             Everything You Need
           </span>
@@ -89,7 +92,10 @@ export default function EverythingYouNeed() {
             const Icon = feature.icon;
 
             return (
-              <ScrollAnimation key={index}>
+              <ScrollAnimation
+                key={index}
+                from={scrollRevealFromIndex(index)}
+              >
                 <div
                   className="relative min-h-[200px] overflow-hidden rounded-2xl border border-line bg-background p-8 transition-all duration-300 hover:-translate-y-1 hover:glow-green"
                 >

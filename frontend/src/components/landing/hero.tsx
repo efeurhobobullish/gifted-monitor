@@ -5,8 +5,8 @@ import { ScrollAnimation } from "../ui";
 
 export default function Hero() {
   return (
-    <ScrollAnimation>
-      <section className="grid grid-cols-1 items-center gap-10 py-8 md:grid-cols-2 md:min-h-[480px] main">
+    <section className="grid grid-cols-1 items-center gap-10 py-8 md:grid-cols-2 md:min-h-[480px] main">
+      <ScrollAnimation from="left">
         <div className="space-y-10">
           <div className="space-y-4">
             <h1 className="text-4xl font-space font-bold text-primary-2 md:text-5xl">
@@ -40,14 +40,16 @@ export default function Hero() {
             </a>
           </div>
         </div>
+      </ScrollAnimation>
 
+      <ScrollAnimation from="right">
         <div className="p-1 sm:p-0">
           <p className="mb-3 text-center text-[10px] font-medium uppercase tracking-widest text-muted sm:mb-4 sm:text-left">
             Uptime preview
           </p>
           <HeroMetrics />
         </div>
-      </section>
-    </ScrollAnimation>
+      </ScrollAnimation>
+    </section>
   );
 }
