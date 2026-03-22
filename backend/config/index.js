@@ -32,7 +32,8 @@ module.exports = {
   PING_CHECK_INTERVAL_SECS: parseInt(
     process.env.PING_CHECK_INTERVAL_SECS || "10",
   ),
-  MIN_PING_INTERVAL_MINS: parseInt(process.env.MIN_PING_INTERVAL_MINS || "3"),
+  /** Absolute floor (minutes); per-plan minimums may be higher — see libs/plans.js */
+  MIN_PING_INTERVAL_MINS: parseInt(process.env.MIN_PING_INTERVAL_MINS || "1"),
 
   // ── Timezone -────────────────────
   TIMEZONE: process.env.TIMEZONE || "Africa/Nairobi",

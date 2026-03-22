@@ -13,6 +13,7 @@ const {
 } = require("../libs/auth");
 const { requireAuth } = require("../middleware/auth");
 const { sendOtpEmail } = require("../utils/otpEmail");
+const plans = require("../libs/plans");
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -134,6 +135,7 @@ router.post("/signup", authLimiter, async (req, res) => {
       passwordHash,
       isAdmin: isFirstUser,
       isSuperAdmin: isFirstUser,
+      plan: isFirstUser ? "pro" : "starter",
     });
 
     const code = generateOtp();
@@ -431,6 +433,8 @@ router.get("/me", requireAuth, async (req, res) => {
         .json({ error: "Unauthorised Login, Please contact Administrators" });
     // Always issue a fresh token so admin/superadmin promotions take effect immediately
     res.setHeader('x-refresh-token', signToken(user.id, !!user.is_admin, !!user.is_superadmin));
+    const pl = plans.normalizePlan(user);
+    const lim = plans.getPlanLimits(user);
     res.json({
       id: user.id,
       username: user.username,
@@ -440,6 +444,11 @@ router.get("/me", requireAuth, async (req, res) => {
       is_admin: user.is_admin,
       is_superadmin: user.is_superadmin,
       avatar: user.avatar || null,
+      plan: pl,
+      plan_limits: {
+        max_monitors: lim.maxMonitors,
+        allowed_intervals_mins: lim.allowedIntervals,
+      },
       notify_down: user.notify_down !== false,
       notify_up:   user.notify_up   !== false,
       telegram_linked: !!user.telegram_chat_id,

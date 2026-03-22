@@ -25,6 +25,11 @@ const faqs: FAQItem[] = [
       "HTTP and HTTPS endpoints with configurable methods (GET, HEAD, POST), intervals, and expectations. Use it for marketing sites, APIs, and internal services you need to trust.",
   },
   {
+    question: "What are Starter, Elite, and Pro?",
+    answer:
+      "Starter includes up to 5 monitors with preset intervals (5, 10, 30, or 60 minutes). Elite allows up to 20 monitors with intervals 3, 5, 10, 30, or 60 minutes. Pro allows up to 100 monitors and adds 1-minute checks plus the same other presets. Only these preset intervals are available — no free-form custom minutes. Limits are enforced when you create or edit monitors.",
+  },
+  {
     question: "Do I need my own servers?",
     answer:
       "No. Checks run on Gifted Monitor infrastructure. You only add monitors and choose how you want to be notified.",

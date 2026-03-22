@@ -76,6 +76,7 @@ async function createPostgresAdapter(DATABASE_URL) {
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS alert_whatsapp BOOLEAN DEFAULT true`).catch(() => {});
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS alert_telegram BOOLEAN DEFAULT false`).catch(() => {});
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS alert_email BOOLEAN DEFAULT false`).catch(() => {});
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS plan VARCHAR(20)`).catch(() => {});
 
   return {
     async getUserCount() {
@@ -83,10 +84,10 @@ async function createPostgresAdapter(DATABASE_URL) {
       return parseInt(r.rows[0].count);
     },
 
-    async createUser({ username, name, email, whatsapp, passwordHash, isAdmin = false, isSuperAdmin = false }) {
+    async createUser({ username, name, email, whatsapp, passwordHash, isAdmin = false, isSuperAdmin = false, plan = 'starter' }) {
       const r = await pool.query(
-        'INSERT INTO users (username, name, email, whatsapp, password_hash, is_admin, is_superadmin) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *',
-        [username, name, email, whatsapp, passwordHash, isAdmin, isSuperAdmin]
+        'INSERT INTO users (username, name, email, whatsapp, password_hash, is_admin, is_superadmin, plan) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *',
+        [username, name, email, whatsapp, passwordHash, isAdmin, isSuperAdmin, plan || 'starter']
       );
       return r.rows[0];
     },
@@ -129,7 +130,7 @@ async function createPostgresAdapter(DATABASE_URL) {
       const offset = (page - 1) * limit;
       const like = `%${search}%`;
       const r = await pool.query(
-        `SELECT id,username,name,email,whatsapp,is_verified,is_admin,is_superadmin,is_disabled,avatar,created_at
+        `SELECT id,username,name,email,whatsapp,is_verified,is_admin,is_superadmin,is_disabled,avatar,plan,created_at
          FROM users
          WHERE name ILIKE $1 OR email ILIKE $1 OR username ILIKE $1
          ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
@@ -175,6 +176,11 @@ async function createPostgresAdapter(DATABASE_URL) {
         [userId, name, url, path || null, method || 'GET', body || null, intervalMins || 3, notifyDown !== false, notifyUp !== false]
       );
       return r.rows[0];
+    },
+
+    async countUserMonitors(userId) {
+      const r = await pool.query('SELECT COUNT(*)::int AS c FROM monitors WHERE user_id=$1', [userId]);
+      return r.rows[0]?.c || 0;
     },
 
     async getUserMonitors(userId) {

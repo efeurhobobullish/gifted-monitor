@@ -4,7 +4,7 @@ const { sanitize, comparePassword } = require('../libs/auth');
 const { requireAuth } = require('../middleware/auth');
 const { pingMonitor } = require('../libs/ping');
 const notify = require('../libs/notify');
-const config = require('../config');
+const plans = require('../libs/plans');
 
 router.use(requireAuth);
 
@@ -41,14 +41,32 @@ router.post('/', async (req, res) => {
     const path = req.body.path ? sanitize(req.body.path) : null;
     const method = (sanitize(req.body.method) || 'GET').toUpperCase();
     const body = (method === 'POST' && req.body.body) ? sanitize(req.body.body) : null;
-    let intervalMins = parseInt(req.body.intervalMins) || 3;
+    let intervalMins = parseInt(req.body.intervalMins);
+    if (!Number.isFinite(intervalMins)) intervalMins = plans.defaultIntervalMins(user);
 
     if (!name || !url) return res.status(400).json({ error: 'Name and URL are required' });
     if (name.length > 100) return res.status(400).json({ error: 'Monitor name too long (max 100 chars)' });
     if (!url.startsWith('http')) return res.status(400).json({ error: 'URL must start with http:// or https://' });
     if (!['GET', 'HEAD', 'POST'].includes(method)) return res.status(400).json({ error: 'Method must be GET, HEAD, or POST' });
-    if (intervalMins < config.MIN_PING_INTERVAL_MINS) return res.status(400).json({ error: `Minimum interval is ${config.MIN_PING_INTERVAL_MINS} minutes` });
+
+    if (!user.is_superadmin && !plans.isIntervalAllowed(user, intervalMins)) {
+      const pl = plans.normalizePlan(user);
+      const allowed = plans.getAllowedIntervals(user).join(', ');
+      return res.status(400).json({
+        error: `Invalid check interval for ${pl} plan. Use one of: ${allowed} minutes`,
+      });
+    }
     if (intervalMins > 1440) return res.status(400).json({ error: 'Maximum interval is 24 hours' });
+
+    const maxM = plans.getPlanLimits(user).maxMonitors;
+    if (!user.is_superadmin) {
+      const n = await db.countUserMonitors(req.userId);
+      if (n >= maxM) {
+        return res.status(403).json({
+          error: `Monitor limit reached (${maxM} on your ${plans.normalizePlan(user)} plan). Upgrade or remove a monitor.`,
+        });
+      }
+    }
 
     const notifyDown = req.body.notify_down !== false && req.body.notify_down !== 'false';
     const notifyUp   = req.body.notify_up   !== false && req.body.notify_up   !== 'false';
@@ -81,7 +99,13 @@ router.put('/:id', async (req, res) => {
     if (body !== undefined && (updates.method || monitor.method) === 'POST') updates.body = sanitize(body) || null;
     if (intervalMins !== undefined) {
       const i = parseInt(intervalMins);
-      if (i < config.MIN_PING_INTERVAL_MINS) return res.status(400).json({ error: `Minimum interval is ${config.MIN_PING_INTERVAL_MINS} minutes` });
+      const u = await db.getUserById(req.userId);
+      if (!u.is_superadmin && !plans.isIntervalAllowed(u, i)) {
+        const allowed = plans.getAllowedIntervals(u).join(', ');
+        return res.status(400).json({
+          error: `Invalid check interval. Use one of: ${allowed} minutes`,
+        });
+      }
       if (i > 1440) return res.status(400).json({ error: 'Maximum interval is 24 hours' });
       updates.interval_mins = i;
     }

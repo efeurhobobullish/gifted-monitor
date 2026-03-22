@@ -15,7 +15,7 @@ const useThemeStore = create<ThemeStore>()(
       setTheme: (theme) => set({ theme }),
     }),
     {
-      name: "theme",
+      name: "gifted_monitor_theme",
       partialize: (state) => ({ theme: state.theme }),
     }
   )

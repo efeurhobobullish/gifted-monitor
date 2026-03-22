@@ -17,6 +17,7 @@ async function createMongoAdapter(DATABASE_URL) {
     alert_whatsapp:    { type: Boolean, default: true },
     alert_telegram:    { type: Boolean, default: false },
     alert_email:       { type: Boolean, default: false },
+    plan:          { type: String, enum: ['starter', 'elite', 'pro'], default: 'starter' },
     created_at:    { type: Date, default: Date.now }
   });
 
@@ -70,11 +71,12 @@ async function createMongoAdapter(DATABASE_URL) {
   return {
     async getUserCount() { return User.countDocuments(); },
 
-    async createUser({ username, name, email, whatsapp, passwordHash, isAdmin = false, isSuperAdmin = false }) {
+    async createUser({ username, name, email, whatsapp, passwordHash, isAdmin = false, isSuperAdmin = false, plan = 'starter' }) {
       return toPlain(await User.create({
         username, name, email, whatsapp,
         password_hash: passwordHash,
-        is_admin: isAdmin, is_superadmin: isSuperAdmin
+        is_admin: isAdmin, is_superadmin: isSuperAdmin,
+        plan: plan || 'starter'
       }));
     },
 
@@ -96,7 +98,7 @@ async function createMongoAdapter(DATABASE_URL) {
         ? { $or: [{ name: new RegExp(search, 'i') }, { email: new RegExp(search, 'i') }, { username: new RegExp(search, 'i') }] }
         : {};
       const total = await User.countDocuments(q);
-      const users = await User.find(q, 'username name email whatsapp is_verified is_admin is_superadmin is_disabled avatar created_at')
+      const users = await User.find(q, 'username name email whatsapp is_verified is_admin is_superadmin is_disabled avatar plan created_at')
         .sort({ created_at: -1 }).skip((page - 1) * limit).limit(limit);
       return { users: users.map(toPlain), total };
     },
@@ -120,6 +122,10 @@ async function createMongoAdapter(DATABASE_URL) {
         path: path || null, method: method || 'GET',
         body: body || null, interval_mins: intervalMins || 3
       }));
+    },
+
+    async countUserMonitors(userId) {
+      return Monitor.countDocuments({ user_id: userId });
     },
 
     async getUserMonitors(userId) {

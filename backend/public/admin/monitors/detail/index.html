@@ -102,17 +102,14 @@
       </div>
       <div>
         <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Check Interval</label>
+        <p class="text-[11px] text-gray-600 mb-2">Presets: 1–60 min (admin edit is not limited by the user&apos;s plan).</p>
         <div class="grid grid-cols-3 gap-2 mb-2">
-          <button type="button" data-val="1"      onclick="selectInterval(1)"        class="interval-opt px-2 py-2 text-xs font-semibold border border-[#1e2740] rounded-xl text-gray-400 hover:border-green-500/40 hover:text-green-400 transition-all">1 min</button>
-          <button type="button" data-val="3"      onclick="selectInterval(3)"        class="interval-opt px-2 py-2 text-xs font-semibold border border-[#1e2740] rounded-xl text-gray-400 hover:border-green-500/40 hover:text-green-400 transition-all">3 min</button>
-          <button type="button" data-val="5"      onclick="selectInterval(5)"        class="interval-opt px-2 py-2 text-xs font-semibold border border-[#1e2740] rounded-xl text-gray-400 hover:border-green-500/40 hover:text-green-400 transition-all">5 min</button>
-          <button type="button" data-val="10"     onclick="selectInterval(10)"       class="interval-opt px-2 py-2 text-xs font-semibold border border-[#1e2740] rounded-xl text-gray-400 hover:border-green-500/40 hover:text-green-400 transition-all">10 min</button>
-          <button type="button" data-val="30"     onclick="selectInterval(30)"       class="interval-opt px-2 py-2 text-xs font-semibold border border-[#1e2740] rounded-xl text-gray-400 hover:border-green-500/40 hover:text-green-400 transition-all">30 min</button>
-          <button type="button" data-val="60"     onclick="selectInterval(60)"       class="interval-opt px-2 py-2 text-xs font-semibold border border-[#1e2740] rounded-xl text-gray-400 hover:border-green-500/40 hover:text-green-400 transition-all">1 hr</button>
-          <button type="button" data-val="custom" onclick="selectInterval('custom')" class="interval-opt px-2 py-2 text-xs font-semibold border border-[#1e2740] rounded-xl text-gray-400 hover:border-green-500/40 hover:text-green-400 transition-all">Custom</button>
-        </div>
-        <div id="custom-interval-wrap" class="hidden mt-2">
-          <input id="m-custom-interval" type="number" min="1" max="1440" placeholder="Minutes (min: 1)" class="w-full bg-[#0a0d12] border border-[#1e2740] text-gray-100 rounded-xl px-4 py-3 text-sm placeholder-gray-600 focus:border-green-500/50 outline-none transition-colors"/>
+          <button type="button" data-val="1"  onclick="selectInterval(1)"  class="interval-opt px-2 py-2 text-xs font-semibold border border-[#1e2740] rounded-xl text-gray-400 hover:border-green-500/40 hover:text-green-400 transition-all">1 min</button>
+          <button type="button" data-val="3"  onclick="selectInterval(3)"  class="interval-opt px-2 py-2 text-xs font-semibold border border-[#1e2740] rounded-xl text-gray-400 hover:border-green-500/40 hover:text-green-400 transition-all">3 min</button>
+          <button type="button" data-val="5"  onclick="selectInterval(5)"  class="interval-opt px-2 py-2 text-xs font-semibold border border-[#1e2740] rounded-xl text-gray-400 hover:border-green-500/40 hover:text-green-400 transition-all">5 min</button>
+          <button type="button" data-val="10" onclick="selectInterval(10)" class="interval-opt px-2 py-2 text-xs font-semibold border border-[#1e2740] rounded-xl text-gray-400 hover:border-green-500/40 hover:text-green-400 transition-all">10 min</button>
+          <button type="button" data-val="30" onclick="selectInterval(30)" class="interval-opt px-2 py-2 text-xs font-semibold border border-[#1e2740] rounded-xl text-gray-400 hover:border-green-500/40 hover:text-green-400 transition-all">30 min</button>
+          <button type="button" data-val="60" onclick="selectInterval(60)" class="interval-opt px-2 py-2 text-xs font-semibold border border-[#1e2740] rounded-xl text-gray-400 hover:border-green-500/40 hover:text-green-400 transition-all">1 hr</button>
         </div>
       </div>
       <!-- Notification prefs -->
@@ -389,8 +386,7 @@ async function saveAdminEdits() {
   const path  = document.getElementById('m-path')?.value?.trim() || null;
   const method = document.getElementById('m-method').value;
   const body  = document.getElementById('m-body')?.value?.trim();
-  const intervalMins = _selInterval === 'custom'
-    ? (parseInt(document.getElementById('m-custom-interval').value) || 5) : _selInterval;
+  const intervalMins = typeof _selInterval === 'number' ? _selInterval : parseInt(_selInterval, 10) || defaultIntervalForPlan();
   const activeChk = document.getElementById('m-active');
   if (!name || !url) return toast.error('Name and URL are required');
   setBtnLoading('modal-save-btn', true);

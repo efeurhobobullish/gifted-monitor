@@ -69,8 +69,9 @@ export default function Register() {
 
   return (
     <AuthLayout
-      title="Create your Gifted Monitor account"
-      description="Set up your account to deploy and manage automation"
+      variant="signup"
+      title="Create your account"
+      description="We’ll email you a code to verify. No card required — upgrade only if you need more."
     >
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit, onError)}>
         <div className="grid sm:grid-cols-2 gap-4">

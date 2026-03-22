@@ -7,6 +7,7 @@ import {
   Twitter,
   MessageCircle,
 } from "lucide-react";
+import { DEFAULT_LOGO_URL } from "@/constants/branding";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -17,9 +18,18 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-10">
           {/* Brand */}
           <div className="space-y-4">
-            <h3 className="font-space text-lg font-semibold">
-              Gifted Monitor
-            </h3>
+            <div className="flex items-center gap-2">
+              <img
+                src={DEFAULT_LOGO_URL}
+                alt=""
+                className="h-9 w-9 rounded-full object-cover ring-1 ring-line"
+                width={36}
+                height={36}
+              />
+              <h3 className="font-space text-lg font-semibold">
+                Gifted Monitor
+              </h3>
+            </div>
 
             <p className="text-muted text-sm max-w-sm leading-relaxed">
               Full-stack uptime monitoring — watch your sites 24/7 and get alerts

@@ -67,6 +67,42 @@ function clearToken(){ localStorage.removeItem('gm_token'); localStorage.removeI
 function getUser()   { try { return JSON.parse(localStorage.getItem('gm_user') || 'null'); } catch { return null; } }
 function setUser(u)  { localStorage.setItem('gm_user', JSON.stringify(u)); }
 
+/** Plan-based allowed check intervals (minutes); presets only — no custom. Admin UI shows all presets. */
+function getAllowedCheckIntervals() {
+  try {
+    if (typeof location !== 'undefined' && location.pathname && location.pathname.includes('/admin/')) {
+      return [1, 3, 5, 10, 30, 60];
+    }
+    const u = typeof _user !== 'undefined' && _user ? _user : getUser();
+    if (u && u.plan_limits && Array.isArray(u.plan_limits.allowed_intervals_mins)) {
+      return u.plan_limits.allowed_intervals_mins;
+    }
+  } catch (_) {}
+  return [1, 3, 5, 10, 30, 60];
+}
+function applyIntervalUiForPlan() {
+  const allowed = getAllowedCheckIntervals();
+  document.querySelectorAll('.interval-opt').forEach(btn => {
+    const v = btn.dataset.val;
+    if (v === 'custom') { btn.style.display = 'none'; return; }
+    const n = parseInt(v, 10);
+    if (!Number.isFinite(n)) return;
+    btn.style.display = allowed.includes(n) ? '' : 'none';
+  });
+  document.getElementById('custom-interval-wrap')?.classList.add('hidden');
+}
+function defaultIntervalForPlan() {
+  const allowed = getAllowedCheckIntervals();
+  if (allowed.includes(5)) return 5;
+  return allowed[0] || 5;
+}
+function snapIntervalToAllowed(mins) {
+  const allowed = getAllowedCheckIntervals();
+  const m = parseInt(mins, 10);
+  if (Number.isFinite(m) && allowed.includes(m)) return m;
+  return allowed[0] || 5;
+}
+
 // Client-side JWT decode (no signature verification — for expiry check only)
 function _decodeJwt(token) {
   try {
@@ -628,7 +664,9 @@ function siteCardHTML(m, opts={}) {
 /* ── Monitor modal ── */
 let _editId = null, _selInterval = 5;
 function openAddModal() {
-  _editId = null; _selInterval = 5;
+  _editId = null;
+  applyIntervalUiForPlan();
+  _selInterval = defaultIntervalForPlan();
   const mt = document.getElementById('modal-title');
   if (mt) mt.textContent = 'Add Monitor';
   const mb = document.getElementById('modal-save-btn');
@@ -642,7 +680,7 @@ function openAddModal() {
   if (prev) prev.textContent = 'https://example.com';
   document.getElementById('m-active-wrap')?.classList.add('hidden');
   document.querySelectorAll('.interval-opt').forEach(o => o.classList.remove('selected'));
-  document.querySelector('.interval-opt[data-val="5"]')?.classList.add('selected');
+  document.querySelector(`.interval-opt[data-val="${_selInterval}"]`)?.classList.add('selected');
   document.getElementById('custom-interval-wrap')?.classList.add('hidden');
   document.getElementById('m-body-group')?.classList.add('hidden');
   setNotifyToggle('down', true);
@@ -650,7 +688,9 @@ function openAddModal() {
   openModal('monitor-modal');
 }
 function openEditModal(m) {
-  _editId = m.id; _selInterval = m.interval_mins || 5;
+  applyIntervalUiForPlan();
+  _editId = m.id;
+  _selInterval = snapIntervalToAllowed(m.interval_mins || 5);
 
   const nm = document.getElementById('m-name');   if (nm) nm.value = m.name   || '';
   const ul = document.getElementById('m-url');    if (ul) ul.value = m.url    || '';
@@ -678,17 +718,10 @@ function openEditModal(m) {
     if (activeLabel) activeLabel.textContent = active ? 'Active' : 'Paused';
   }
 
-  // Interval buttons
-  const presets = [1,3,5,10,30,60];
+  // Interval buttons (presets only)
   document.querySelectorAll('.interval-opt').forEach(o => o.classList.remove('selected'));
-  if (presets.includes(_selInterval)) {
-    document.querySelector(`.interval-opt[data-val="${_selInterval}"]`)?.classList.add('selected');
-    document.getElementById('custom-interval-wrap')?.classList.add('hidden');
-  } else {
-    document.querySelector('.interval-opt[data-val="custom"]')?.classList.add('selected');
-    document.getElementById('custom-interval-wrap')?.classList.remove('hidden');
-    const ci = document.getElementById('m-custom-interval'); if (ci) ci.value = _selInterval;
-  }
+  document.querySelector(`.interval-opt[data-val="${_selInterval}"]`)?.classList.add('selected');
+  document.getElementById('custom-interval-wrap')?.classList.add('hidden');
 
   setNotifyToggle('down', m.notify_down !== false);
   setNotifyToggle('up',   m.notify_up   !== false);
@@ -715,10 +748,12 @@ function toggleNotifyBtn(which) {
   setNotifyToggle(which, hid.value !== 'true');
 }
 function selectInterval(val) {
-  _selInterval = val;
+  const n = parseInt(val, 10);
+  if (!Number.isFinite(n)) return;
+  _selInterval = n;
   document.querySelectorAll('.interval-opt').forEach(o => o.classList.remove('selected'));
-  document.querySelector(`.interval-opt[data-val="${val}"]`)?.classList.add('selected');
-  document.getElementById('custom-interval-wrap')?.classList.toggle('hidden', val !== 'custom');
+  document.querySelector(`.interval-opt[data-val="${n}"]`)?.classList.add('selected');
+  document.getElementById('custom-interval-wrap')?.classList.add('hidden');
 }
 function methodChanged() {
   const method = document.getElementById('m-method')?.value;

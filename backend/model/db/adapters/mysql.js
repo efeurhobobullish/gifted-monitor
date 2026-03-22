@@ -34,6 +34,7 @@ async function createMysqlAdapter(DATABASE_URL) {
   await pool.query(`ALTER TABLE users ADD COLUMN alert_whatsapp TINYINT(1) DEFAULT 1`).catch(() => {});
   await pool.query(`ALTER TABLE users ADD COLUMN alert_telegram TINYINT(1) DEFAULT 0`).catch(() => {});
   await pool.query(`ALTER TABLE users ADD COLUMN alert_email TINYINT(1) DEFAULT 0`).catch(() => {});
+  await pool.query(`ALTER TABLE users ADD COLUMN plan VARCHAR(20) NULL`).catch(() => {});
 
   await pool.query(`CREATE TABLE IF NOT EXISTS otp_codes (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -86,12 +87,12 @@ async function createMysqlAdapter(DATABASE_URL) {
       return r[0].c;
     },
 
-    async createUser({ username, name, email, whatsapp, passwordHash, isAdmin = false, isSuperAdmin = false }) {
+    async createUser({ username, name, email, whatsapp, passwordHash, isAdmin = false, isSuperAdmin = false, plan = 'starter' }) {
       const [r] = await pool.query(
-        'INSERT INTO users (username,name,email,whatsapp,password_hash,is_admin,is_superadmin) VALUES (?,?,?,?,?,?,?)',
-        [username, name, email, whatsapp, passwordHash, isAdmin ? 1 : 0, isSuperAdmin ? 1 : 0]
+        'INSERT INTO users (username,name,email,whatsapp,password_hash,is_admin,is_superadmin,plan) VALUES (?,?,?,?,?,?,?,?)',
+        [username, name, email, whatsapp, passwordHash, isAdmin ? 1 : 0, isSuperAdmin ? 1 : 0, plan || 'starter']
       );
-      return { id: r.insertId, username, name, email, whatsapp, is_verified: false, is_admin: isAdmin, is_superadmin: isSuperAdmin, is_disabled: false };
+      return { id: r.insertId, username, name, email, whatsapp, is_verified: false, is_admin: isAdmin, is_superadmin: isSuperAdmin, is_disabled: false, plan: plan || 'starter' };
     },
 
     async getUserByEmail(email)       { return row(await pool.query('SELECT * FROM users WHERE email=?',    [email])); },
@@ -114,7 +115,7 @@ async function createMysqlAdapter(DATABASE_URL) {
       const offset = (page - 1) * limit;
       const like = `%${search}%`;
       const [r] = await pool.query(
-        `SELECT id,username,name,email,whatsapp,is_verified,is_admin,is_superadmin,is_disabled,avatar,created_at
+        `SELECT id,username,name,email,whatsapp,is_verified,is_admin,is_superadmin,is_disabled,avatar,plan,created_at
          FROM users WHERE name LIKE ? OR email LIKE ? OR username LIKE ?
          ORDER BY created_at DESC LIMIT ? OFFSET ?`,
         [like, like, like, limit, offset]
@@ -153,6 +154,11 @@ async function createMysqlAdapter(DATABASE_URL) {
         [userId, name, url, path || null, method || 'GET', body || null, intervalMins || 3]
       );
       return { id: r.insertId, user_id: userId, name, url, path: path || null, method: method || 'GET', body, interval_mins: intervalMins || 3, is_active: true, last_status: 'unknown' };
+    },
+
+    async countUserMonitors(userId) {
+      const [r] = await pool.query('SELECT COUNT(*) as c FROM monitors WHERE user_id=?', [userId]);
+      return r[0]?.c || 0;
     },
 
     async getUserMonitors(userId) {

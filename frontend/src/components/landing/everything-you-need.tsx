@@ -17,7 +17,7 @@ const FEATURES: {
   {
     title: "Real-time Monitoring",
     description:
-      "Your sites are pinged every 1–5 minutes around the clock. No gaps, no missed incidents.",
+      "You pick from preset check intervals (no arbitrary custom minutes). Elite includes 3 min through 1 hr; Pro adds 1-minute checks.",
     icon: RefreshCw,
   },
   {

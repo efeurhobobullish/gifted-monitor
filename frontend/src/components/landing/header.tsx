@@ -1,5 +1,6 @@
 import { Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
+import { DEFAULT_LOGO_URL } from "@/constants/branding";
 import ModeToggle from "../ui/mode-toggle";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
@@ -79,10 +80,19 @@ export default function Header() {
             className="fixed z-100 inset-0 bg-background/80 backdrop-blur h-[100vh] w-full flex flex-col pb-10"
           >
             <header className="main flex items-center justify-between h-[70px] text-main w-full">
-              <h3 className="font-space text-xl font-medium">
-                Gifted Monitor{" "}
-                <span className="text-primary text-2xl">&bull;</span>
-              </h3>
+              <div className="flex items-center gap-2 min-w-0">
+                <img
+                  src={DEFAULT_LOGO_URL}
+                  alt=""
+                  className="h-8 w-8 shrink-0 rounded-full object-cover ring-1 ring-line"
+                  width={32}
+                  height={32}
+                />
+                <h3 className="font-space text-xl font-medium truncate">
+                  Gifted Monitor{" "}
+                  <span className="text-primary text-2xl">&bull;</span>
+                </h3>
+              </div>
               <button type="button" onClick={() => setIsOpen(false)}>
                 <X size={24} />
               </button>

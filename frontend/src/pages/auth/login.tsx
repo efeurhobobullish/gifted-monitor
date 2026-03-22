@@ -75,8 +75,9 @@ export default function Login() {
 
   return (
     <AuthLayout
-      title="Welcome back to Gifted Monitor"
-      description="Access your dashboard to manage bot deployments and runtime"
+      variant="login"
+      title="Welcome back"
+      description="Sign in with your email and password to open your dashboard."
     >
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit, onError)}>
         <InputWithIcon

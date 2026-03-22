@@ -6,23 +6,25 @@ export default function Pricing() {
       name: "Starter",
       price: "Free",
       priceLabel: "",
-      description: "Get started with core monitoring",
+      description: "Core uptime checks for a small footprint",
       features: [
-        "Add monitors for your key URLs",
-        "Email verification at signup",
-        "Configurable check intervals",
+        "Up to 5 monitors",
+        "Intervals: 5, 10, 30, or 60 min (presets only)",
+        "Email verification & dashboard",
+        "Email alerts (when enabled)",
         "Community & docs",
       ],
       buttonText: "Get Started",
     },
     {
-      name: "Team",
-      price: "Pro",
+      name: "Elite",
+      price: "Contact",
       priceLabel: "",
-      description: "More monitors and priority support",
+      description: "Up to 20 sites with standard preset schedules",
       popular: true,
       features: [
-        "Higher monitor limits",
+        "Up to 20 monitors",
+        "Intervals: 3, 5, 10, 30, or 60 min (presets only)",
         "WhatsApp, Telegram & email alerts",
         "Uptime history & dashboards",
         "Priority response",
@@ -30,15 +32,16 @@ export default function Pricing() {
       buttonText: "Start monitoring",
     },
     {
-      name: "Enterprise",
+      name: "Pro",
       price: "Custom",
       priceLabel: "",
-      description: "For orgs with SLAs and compliance needs",
+      description: "1-minute checks and higher capacity",
       features: [
+        "Up to 100 monitors",
+        "Intervals: 1, 3, 5, 10, 30, or 60 min (presets only)",
+        "All Elite alert channels",
         "Custom limits & onboarding",
-        "Dedicated support channel",
-        "Security review assistance",
-        "Volume & contract pricing",
+        "Dedicated support & SLAs",
       ],
       buttonText: "Contact sales",
     },
@@ -49,11 +52,11 @@ export default function Pricing() {
       {/* Header */}
       <ScrollAnimation className="text-center mb-16 max-w-2xl mx-auto">
         <h2 className="text-4xl md:text-5xl font-bold mb-4 font-space">
-          Simple monitoring plans
+          Starter, Elite & Pro
         </h2>
         <p className="text-muted text-sm max-w-2xl mx-auto">
-          Gifted Monitor scales with you — start free and upgrade when you need
-          more monitors, channels, or support.
+          Check intervals are preset buttons only (no custom minutes). Elite covers
+          up to 20 sites with 3-minute–1-hour schedules; Pro adds 1-minute checks.
         </p>
       </ScrollAnimation>
 

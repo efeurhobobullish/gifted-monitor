@@ -4,6 +4,7 @@ const { sanitize, hashPassword, comparePassword } = require("../libs/auth");
 const { requireAuth, requireAdmin } = require("../middleware/auth");
 const { pingMonitor } = require("../libs/ping");
 const { TIMEZONE } = require("../config");
+const plans = require("../libs/plans");
 
 router.use(requireAuth, requireAdmin);
 
@@ -93,6 +94,7 @@ router.put("/users/:id", async (req, res) => {
       is_admin,
       is_disabled,
       password,
+      plan,
     } = req.body;
     const updates = {};
 
@@ -151,6 +153,15 @@ router.put("/users/:id", async (req, res) => {
           .status(400)
           .json({ error: "Password must be at least 6 characters" });
       updates.password_hash = await hashPassword(password);
+    }
+
+    if (plan !== undefined) {
+      const key = String(plan).toLowerCase().trim();
+      if (!plans.isValidPlanKey(key))
+        return res.status(400).json({ error: "plan must be starter, elite, or pro" });
+      if (!actorIsSuperAdmin && !actorIsAdmin)
+        return res.status(403).json({ error: "Only admins can change plan" });
+      updates.plan = key;
     }
 
     const user = await db.updateUser(targetId, updates);
