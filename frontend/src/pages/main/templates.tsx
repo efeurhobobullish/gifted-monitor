@@ -59,10 +59,13 @@ export default function Templates() {
         {/* HEADER & SEARCH */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="space-y-1">
-            <h1 className="text-2xl font-space font-bold">Bot Templates</h1>
+            <h1 className="text-2xl font-space font-bold">Monitor Templates</h1>
             <p className="text-muted text-sm">
-              Select a template to deploy your new WhatsApp bot.
+              Select a template to deploy your new monitor worker.
             </p>
+            <span className="mt-2 inline-flex rounded-full border border-line bg-foreground px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted">
+              Demo
+            </span>
           </div>
 
           <div className="relative w-full md:w-72">
@@ -177,7 +180,7 @@ export default function Templates() {
                       "
                     >
                       <Rocket size={15} />
-                      Deploy Bot
+                      Deploy Monitor
                     </Link>
                   </div>
                 </div>

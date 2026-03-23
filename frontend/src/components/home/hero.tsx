@@ -5,8 +5,9 @@ import { ScrollAnimation } from "../ui";
 
 export default function Hero() {
   return (
-    <section className="grid md:grid-cols-2 grid-cols-1 gap-6 py-6 md:h-[400px] items-center main">
-      <ScrollAnimation from="left">
+    <ScrollAnimation>
+      <section className="grid md:grid-cols-2 grid-cols-1 gap-6 py-6 md:h-[400px] items-center main">
+        
         {/* LEFT SIDE: User Data & Actions */}
         <div className="space-y-8">
           <div className="space-y-2">
@@ -50,9 +51,9 @@ export default function Hero() {
             </Link>
           </div>
         </div>
-      </ScrollAnimation>
 
-      <ScrollAnimation from="right">
+        {/* RIGHT SIDE: Chart */}
+        {/* Removed gradient/blur, made it a solid, neat card */}
         <div className="h-[300px] w-full bg-background border border-line rounded-xl p-6 relative overflow-hidden flex flex-col justify-between">
             <div className="flex justify-between items-start mb-4">
                 <div>
@@ -64,11 +65,13 @@ export default function Hero() {
                 </div>
             </div>
             
+            {/* Chart Component */}
             <div className="flex-1 w-full h-full">
                <HeroChart theme="dark"/>
             </div>
         </div>
-      </ScrollAnimation>
-    </section>
+
+      </section>
+    </ScrollAnimation>
   )
 }

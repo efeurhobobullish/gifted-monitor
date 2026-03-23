@@ -16,4 +16,6 @@ export {
 export {default as PricingCard} from "./pricing-card";
 export {default as SlidingMenu} from "./SlidingMenu";
 export {default as ModeToggle} from "./mode-toggle";
+export {default as Modal} from "./modal";
+export {default as NonCloseModal} from "./non-close-modal";
 

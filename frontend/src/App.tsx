@@ -20,11 +20,12 @@ import {
   Community,
   Coins,
   Withdraw,
-  Bots,
+  Monitors,
   Deploy,
   Developers,
   Templates,
   BotLogs,
+  MonitorDetail,
 } from "@/pages/main";
 
 export default function App() {
@@ -42,7 +43,9 @@ export default function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
 
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/dashboard/bots" element={<Bots />} />
+        <Route path="/monitors" element={<Monitors />} />
+        <Route path="/dashboard/monitors" element={<Monitors />} />
+        <Route path="/dashboard/bots" element={<Monitors />} />
         <Route path="/dashboard/templates" element={<Templates />} />
         <Route path="/dashboard/deploy" element={<Deploy />} />
         <Route path="/dashboard/coins" element={<Coins />} />
@@ -50,7 +53,12 @@ export default function App() {
         <Route path="/dashboard/referral" element={<Referral />} />
         <Route path="/dashboard/community" element={<Community />} />
         <Route path="/dashboard/developers" element={<Developers />} />
+        <Route path="/monitors/:botId/logs" element={<BotLogs />} />
+        <Route path="/dashboard/monitors/:botId/logs" element={<BotLogs />} />
+        <Route path="/monitors/detail" element={<MonitorDetail />} />
+        <Route path="/dashboard/monitors/detail" element={<MonitorDetail />} />
         <Route path="/dashboard/bots/:botId/logs" element={<BotLogs />} />
+        <Route path="/dashboard/bots/detail" element={<MonitorDetail />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/withdraw" element={<Withdraw />} />
 

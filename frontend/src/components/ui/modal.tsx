@@ -21,6 +21,9 @@ export default function Modal({ isOpen, onClose, children, title }: ModalProps) 
       document.body.style.overflow = "auto";
     };
   }, [isOpen]);
+
+  if (!isOpen) return null;
+
   return (
     <div className="fixed inset-0 z-100 center">
       <motion.div

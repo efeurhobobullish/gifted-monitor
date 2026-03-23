@@ -1,68 +1,45 @@
 import { HomeLayout } from "@/layouts";
-import { motion } from "framer-motion";
 import {
   Bot,
-  Activity,
-  PauseCircle,
-  Coins as CoinsIcon,
+  CheckSquare,
+  AlertCircle,
+  TrendingUp,
   Plus,
-  Play,
-  Pause,
-  RotateCcw,
-  FileText,
-  Trash2,
+  ExternalLink,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { AddMonitorModal } from "@/components/home";
 
 import api from "@/config/api";
 import useAuthStore from "@/store/useAuthStore";
 
-/* ================= TYPES ================= */
-interface DashboardStats {
-  totalBots: number;
-  activeBots: number;
-  inactiveBots: number;
-  coins: number;
-  deployedSlots: number;
-  totalSlots: number;
-}
-
-interface BotItem {
-  _id: string;
+interface MonitorItem {
+  id?: string | number;
+  _id?: string | number;
   name: string;
-  template: string;
+  url?: string;
+  path?: string | null;
   status: "running" | "stopped" | "deploying" | "failed";
-  uptime: string;
-  actions: {
-    canStart: boolean;
-    canStop: boolean;
-    canRestart: boolean;
-    canDelete: boolean;
-    canViewLogs: boolean;
-  };
+  uptime?: string | number;
+  interval_mins?: number;
+  intervalMins?: number;
 }
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
 
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [bots, setBots] = useState<BotItem[]>([]);
+  const [monitors, setMonitors] = useState<MonitorItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const fetchDashboard = async () => {
     try {
       setLoading(true);
-
-      const [statsRes, botsRes] = await Promise.all([
-        api.get("/bots/dashboard/overview"),
-        api.get("/bots"),
-      ]);
-
-      setStats(statsRes.data.stats);
-      setBots(botsRes.data.bots || []);
+      const { data } = await api.get("/monitors");
+      setMonitors(Array.isArray(data) ? data : []);
     } catch {
       toast.error("Failed to load dashboard");
     } finally {
@@ -74,281 +51,281 @@ export default function Dashboard() {
     fetchDashboard();
   }, []);
 
-  const action = async (
-    fn: () => Promise<any>,
-    successMsg: string
-  ) => {
-    try {
-      await fn();
-      toast.success(successMsg);
-      fetchDashboard();
-    } catch (err: any) {
-      toast.error(
-        err?.response?.data?.message || "Action failed"
-      );
-    }
-  };
-
-  const deployed = stats?.deployedSlots ?? 0;
-  const total = stats?.totalSlots ?? 0;
+  const totalMonitors = monitors.length;
+  const activeMonitors = monitors.filter((m) => m.status === "running").length;
+  const inactiveMonitors = monitors.filter((m) => m.status !== "running").length;
+  const deployed = totalMonitors;
+  const total = user?.role === "admin" ? 100 : 20;
   const progress =
     total > 0 ? Math.min((deployed / total) * 100, 100) : 0;
+  const remaining = Math.max(total - deployed, 0);
+
+  const avgUptime = useMemo(() => {
+    if (!monitors.length) return "0.0%";
+    const values = monitors
+      .map((item) => Number.parseFloat(String(item.uptime || "0")))
+      .filter((num) => Number.isFinite(num));
+    if (!values.length) return "0.0%";
+    const avg =
+      values.reduce((sum, value) => sum + value, 0) / values.length;
+    return `${avg.toFixed(1)}%`;
+  }, [monitors]);
+
+  const allOnline = totalMonitors > 0 && inactiveMonitors === 0;
 
   return (
     <HomeLayout>
-      <section className="main py-10 space-y-12">
-        {/* ================= HEADER ================= */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      <section className="main py-10 space-y-7">
+        <div className="flex items-center justify-between rounded-2xl border border-line bg-background px-4 py-3 md:px-5">
           <div>
-            <h1 className="text-2xl font-semibold font-space">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">
               Dashboard
+            </p>
+            <p className="mt-1 text-sm text-muted">
+              Overview of monitor health and activity
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+          <div>
+            <h1 className="font-space text-3xl font-bold">
+              Welcome back, {user?.fullName || "User"}{" "}
+              <span className="inline-block">👋</span>
             </h1>
-            <p className="text-muted text-sm">
-              Welcome back,{" "}
-              <span className="font-medium">
-                {user?.fullName || "User"}
-              </span>
+            <p className="mt-1 text-sm text-muted">
+              Here's what's happening with your monitors
             </p>
           </div>
 
           <button
-            onClick={() => navigate("/dashboard/templates")}
-            className="btn-primary h-11 px-6 rounded-full flex items-center gap-2"
+            onClick={() => setShowAddModal(true)}
+            className="btn-primary h-8 self-start rounded-md px-3 text-xs md:h-11 md:rounded-xl md:px-5 md:text-sm"
           >
             <Plus size={16} />
-            Add New Bot
+            Add Monitor
           </button>
         </div>
 
-        {/* ================= STATS ================= */}
-        {!loading && stats && (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <StatCard
-                title="Total Bots"
-                value={stats.totalBots}
-                icon={<Bot size={20} />}
-                iconBg="bg-primary/10 text-primary"
-                onClick={() => navigate("/dashboard/bots")}
-              />
+        <div
+          className={`rounded-xl border px-4 py-3 text-sm font-medium ${
+            allOnline
+              ? "border-primary/30 bg-primary/10 text-primary"
+              : "border-amber-500/30 bg-amber-500/10 text-amber-600"
+          }`}
+        >
+          {loading
+            ? "Loading monitor status..."
+            : allOnline
+            ? `All ${totalMonitors} monitor${
+                totalMonitors === 1 ? " is" : "s are"
+              } online and running smoothly`
+            : `${inactiveMonitors} monitor${
+                inactiveMonitors === 1 ? " is" : "s are"
+              } currently down or paused`}
+        </div>
 
-              <StatCard
-                title="Active Bots"
-                value={stats.activeBots}
-                icon={<Activity size={20} />}
-                iconBg="bg-green-500/10 text-green-500"
-                onClick={() => navigate("/dashboard/bots")}
-              />
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+          <DashboardStatCard
+            title="TOTAL"
+            value={totalMonitors}
+            icon={<Bot size={16} />}
+            valueClassName="text-primary"
+          />
+          <DashboardStatCard
+            title="ONLINE"
+            value={activeMonitors}
+            icon={<CheckSquare size={16} />}
+            valueClassName="text-green-500"
+          />
+          <DashboardStatCard
+            title="DOWN"
+            value={inactiveMonitors}
+            icon={<AlertCircle size={16} />}
+            valueClassName="text-red-500"
+          />
+          <DashboardStatCard
+            title="AVG UPTIME"
+            value={avgUptime}
+            icon={<TrendingUp size={16} />}
+            valueClassName="text-amber-500"
+          />
+        </div>
 
-              <StatCard
-                title="Inactive Bots"
-                value={stats.inactiveBots}
-                icon={<PauseCircle size={20} />}
-                iconBg="bg-amber-500/10 text-amber-500"
-                onClick={() => navigate("/dashboard/bots")}
-              />
+        <div className="rounded-2xl border border-line bg-background p-4">
+          <div className="mb-3 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-muted">
+            <span>Monitor usage</span>
+            <span>
+              {deployed} / {total || 0}
+            </span>
+          </div>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-foreground">
+            <div
+              className="h-full rounded-full bg-primary transition-all"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <p className="mt-2 text-xs text-muted">
+            {remaining} monitor{remaining === 1 ? "" : "s"} remaining
+          </p>
+        </div>
 
-              <StatCard
-                title="Coins"
-                value={stats.coins}
-                icon={<CoinsIcon size={20} />}
-                iconBg="bg-purple-500/10 text-purple-500"
-                onClick={() => navigate("/dashboard/coins")}
-              />
-            </div>
-
-            {/* ================= USAGE ================= */}
-            <div className="glass border border-line rounded-2xl p-8 space-y-4">
-              <h2 className="text-lg font-semibold">
-                Deployment Usage
-              </h2>
-
-              <p className="text-muted text-sm">
-                {deployed} of {total} slots used
-              </p>
-
-              <div className="w-full h-3 rounded-full bg-secondary overflow-hidden">
-                <div
-                  className="h-full bg-primary transition-all"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* ================= RECENT BOTS ================= */}
-        <div className="space-y-6">
-          <h2 className="text-lg font-semibold">
-            Recently Deployed Bots
+        <div className="space-y-4">
+          <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted">
+            Recent monitors
           </h2>
 
-          {bots.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="glass border border-line rounded-2xl p-10 text-center space-y-4"
-            >
-              <Bot size={42} className="mx-auto text-muted" />
-              <p className="text-muted text-sm">
-                No bots deployed yet
-              </p>
-            </motion.div>
+          {loading ? (
+            <div className="rounded-2xl border border-line bg-background p-8 text-sm text-muted">
+              Loading monitors...
+            </div>
           ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {bots.slice(0, 3).map((bot) => (
-                <motion.div
-                  key={bot._id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="glass border border-line rounded-2xl p-6 space-y-5"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold">
-                        {bot.name}
-                      </p>
-                      <p className="text-xs text-muted">
-                        {bot.template}
-                      </p>
-                    </div>
-
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        bot.status === "running"
-                          ? "bg-green-500/10 text-green-600"
-                          : "bg-amber-500/10 text-amber-600"
-                      }`}
-                    >
-                      {bot.status}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    {bot.actions.canStart && (
-                      <button
-                        onClick={() =>
-                          action(
-                            () =>
-                              api.post(
-                                `/bots/${bot._id}/start`
-                              ),
-                            "Bot started"
-                          )
-                        }
-                        className="h-10 rounded-full bg-green-500/10 text-green-600 flex items-center justify-center gap-2"
-                      >
-                        <Play size={14} />
-                        Start
-                      </button>
-                    )}
-
-                    {bot.actions.canStop && (
-                      <button
-                        onClick={() =>
-                          action(
-                            () =>
-                              api.post(
-                                `/bots/${bot._id}/stop`
-                              ),
-                            "Bot stopped"
-                          )
-                        }
-                        className="h-10 rounded-full bg-amber-500/10 text-amber-600 flex items-center justify-center gap-2"
-                      >
-                        <Pause size={14} />
-                        Stop
-                      </button>
-                    )}
-
-                    {bot.actions.canRestart && (
-                      <button
-                        onClick={() =>
-                          action(
-                            () =>
-                              api.post(
-                                `/bots/${bot._id}/restart`
-                              ),
-                            "Bot restarted"
-                          )
-                        }
-                        className="h-10 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center gap-2"
-                      >
-                        <RotateCcw size={14} />
-                        Restart
-                      </button>
-                    )}
-
-                    {bot.actions.canViewLogs && (
-                      <button
-                        onClick={() =>
-                          navigate(
-                            `/dashboard/bots/${bot._id}/logs`
-                          )
-                        }
-                        className="h-10 rounded-full border border-line bg-secondary text-muted flex items-center justify-center gap-2"
-                      >
-                        <FileText size={14} />
-                        Logs
-                      </button>
-                    )}
-                  </div>
-
-                  {bot.actions.canDelete && (
-                    <button
-                      onClick={() =>
-                        action(
-                          () =>
-                            api.delete(
-                              `/bots/${bot._id}`
-                            ),
-                          "Bot deleted"
-                        )
-                      }
-                      className="h-10 w-full rounded-full bg-red-500/10 text-red-600 flex items-center justify-center gap-2"
-                    >
-                      <Trash2 size={14} />
-                      Delete
-                    </button>
-                  )}
-                </motion.div>
+            <div className="space-y-3">
+              {monitors.slice(0, 5).map((bot) => (
+                <RecentMonitorRow
+                  key={String(bot.id || bot._id)}
+                  bot={bot}
+                  onOpen={() =>
+                    navigate(`/monitors/detail/?id=${bot.id || bot._id}`)
+                  }
+                />
               ))}
             </div>
           )}
+          {monitors.length === 0 && !loading && (
+            <div className="rounded-2xl border border-line bg-background p-10 text-center">
+              <Bot size={36} className="mx-auto text-muted" />
+              <p className="mt-3 text-sm text-muted">
+                No monitors added yet.
+              </p>
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="btn-primary mx-auto mt-5 h-10 rounded-lg px-4 text-sm"
+              >
+                Add your first monitor
+              </button>
+            </div>
+          )}
         </div>
+        <AddMonitorModal
+          isOpen={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          onCreated={fetchDashboard}
+        />
       </section>
     </HomeLayout>
   );
 }
 
-/* ================= STAT CARD ================= */
-function StatCard({
+function DashboardStatCard({
   title,
   value,
   icon,
-  iconBg,
-  onClick,
+  valueClassName,
 }: {
   title: string;
-  value: number;
+  value: string | number;
   icon: React.ReactNode;
-  iconBg: string;
-  onClick: () => void;
+  valueClassName: string;
 }) {
   return (
     <div
-      onClick={onClick}
-      className="border border-line rounded-2xl p-6 bg-background flex items-center justify-between cursor-pointer hover:border-primary transition"
+      className="rounded-2xl border border-line bg-background p-5"
     >
-      <div>
-        <p className="text-sm text-muted">{title}</p>
-        <p className="text-3xl font-semibold">{value}</p>
+      <div className="mb-4 text-muted">{icon}</div>
+      <p className="text-xs font-semibold tracking-wide text-muted">
+        {title}
+      </p>
+      <p className={`mt-1 text-4xl font-space font-bold ${valueClassName}`}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function RecentMonitorRow({
+  bot,
+  onOpen,
+}: {
+  bot: MonitorItem;
+  onOpen: () => void;
+}) {
+  const isUp = bot.status === "running";
+  const uptime = Number.parseFloat(String(bot.uptime || "0"));
+  const safeUptime = Number.isFinite(uptime) ? uptime.toFixed(1) : "0.0";
+  const monitorUrl = `${bot.url || ""}${bot.path || ""}` || "Monitor target";
+
+  return (
+    <div className="rounded-2xl border border-line bg-background p-4 md:p-5">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <span
+              className={`h-2.5 w-2.5 rounded-full ${
+                isUp ? "bg-green-500" : "bg-red-500"
+              }`}
+            />
+            <p className="font-semibold">{bot.name}</p>
+          </div>
+          <p className="mt-1 text-xs text-muted">{monitorUrl}</p>
+        </div>
+
+        <button
+          onClick={onOpen}
+          className="btn h-9 rounded-lg border border-line bg-secondary px-3 text-xs text-muted hover:border-primary"
+        >
+          Open
+          <ExternalLink size={13} />
+        </button>
       </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-3 rounded-xl border border-line bg-foreground p-3 text-xs md:grid-cols-4">
+        <MetaCell label="Status" value={isUp ? "UP" : "DOWN"} />
+        <MetaCell label="Uptime" value={`${safeUptime}%`} />
+        <MetaCell label="Interval" value="5m" />
+        <MetaCell label="Checked" value="just now" />
+      </div>
+
       <div
-        className={`h-12 w-12 rounded-xl flex items-center justify-center ${iconBg}`}
+        className="mt-3 grid gap-1"
+        style={{ gridTemplateColumns: "repeat(30, minmax(0, 1fr))" }}
       >
-        {icon}
+        {Array.from({ length: 30 }).map((_, index) => {
+          const shade =
+            index <
+            Math.round((Number.parseFloat(safeUptime) / 100) * 30);
+          return (
+            <span
+              key={`${bot.id || bot._id}-${index}`}
+              className={`h-3 rounded-[3px] ${
+                shade
+                  ? isUp
+                    ? "bg-green-500"
+                    : "bg-red-500"
+                  : "bg-foreground"
+              }`}
+            />
+          );
+        })}
       </div>
+      <p className="mt-2 text-right text-[11px] text-muted">
+        30 checks
+      </p>
+    </div>
+  );
+}
+
+function MetaCell({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div>
+      <p className="uppercase tracking-wide text-muted">{label}</p>
+      <p className="mt-1 text-sm font-medium text-main">{value}</p>
     </div>
   );
 }

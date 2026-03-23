@@ -5,7 +5,6 @@ import {
   Store,
   Gift,
   Users,
-  Layers,
   Code2,
 } from "lucide-react";
 
@@ -46,13 +45,8 @@ export const navlinks = [
   },
   {
     title: "Monitors",
-    href: "/dashboard/bots",
+    href: "/monitors",
     icon: Bot,
-  },
-  {
-    title: "Templates",
-    href: "/dashboard/templates",
-    icon: Layers,
   },
   {
     title: "My Coins",

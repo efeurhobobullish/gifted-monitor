@@ -91,7 +91,7 @@ export default function Deploy() {
   /* ================= DEPLOY ================= */
   const deploy = async () => {
     if (!botName.trim()) {
-      toast.error("Bot name is required");
+      toast.error("Monitor name is required");
       return;
     }
 
@@ -104,8 +104,8 @@ export default function Deploy() {
         env,
       });
 
-      toast.success("Bot deployed successfully");
-      navigate("/dashboard/bots");
+      toast.success("Monitor deployed successfully");
+      navigate("/dashboard/monitors");
     } catch (err: any) {
       toast.error(
         err?.response?.data?.message || "Deployment failed"
@@ -139,6 +139,9 @@ export default function Deploy() {
               {template.coinCost} coins
             </span>
           </p>
+          <span className="inline-flex rounded-full border border-line bg-foreground px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted">
+            Demo
+          </span>
         </div>
 
         {/* ================= META ================= */}
@@ -181,7 +184,7 @@ export default function Deploy() {
         {/* ================= BOT NAME ================= */}
         <div className="space-y-2 max-w-md">
           <label className="text-sm font-medium">
-            Bot Name
+            Monitor Name
           </label>
           <input
             value={botName}
@@ -261,7 +264,7 @@ export default function Deploy() {
         <div className="flex justify-end">
           <ButtonWithLoader
             loading={deploying}
-            initialText="Deploy Bot"
+            initialText="Deploy Monitor"
             loadingText="Deploying..."
             onClick={deploy}
             className="

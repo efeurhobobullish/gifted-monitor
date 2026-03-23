@@ -13,15 +13,17 @@ export default function SlidingMenu({ isOpen, onClose }: SlidingMenuProps) {
   const navigate = useNavigate();
 
   const user = useAuthStore((state) => state.user);
+  const token = useAuthStore((state) => state.token);
   const setUser = useAuthStore((state) => state.setUser);
   const setToken = useAuthStore((state) => state.setToken);
 
-  if (!user) return null;
+  if (!user && !token) return null;
 
+  const displayName = user?.fullName?.trim() || "Account";
   const avatar =
-    user.avatar ||
+    user?.avatar ||
     `https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(
-      user.fullName
+      displayName,
     )}`;
 
   const handleLogout = () => {
@@ -74,14 +76,16 @@ export default function SlidingMenu({ isOpen, onClose }: SlidingMenuProps) {
               <div className="h-12 w-12 rounded-full overflow-hidden bg-foreground border border-line">
                 <img
                   src={avatar}
-                  alt={user.fullName}
+                  alt={displayName}
                   className="w-full h-full object-cover"
                 />
               </div>
 
               <div>
-                <p className="font-medium">{user.fullName}</p>
-                <p className="text-xs text-muted">{user.email}</p>
+                <p className="font-medium">{displayName}</p>
+                {user?.email && (
+                  <p className="text-xs text-muted">{user.email}</p>
+                )}
               </div>
             </div>
 
